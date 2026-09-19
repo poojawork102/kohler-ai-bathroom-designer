@@ -1,0 +1,79 @@
+{
+  "products": [
+    {
+      "id": "KOH-TOI-001",
+      "name": "Numi 2.0 Comfort Height Smart Toilet",
+      "category": "toilet",
+      "sku": "K-30754-PA-0",
+      "price_usd": 13000,
+      "dimensions_in": { "width": 15.1, "depth": 26.2, "height": 18.5 },
+      "clearance_req_in": { "side_min": 15, "front_min": 24 },
+      "gpf": 1.0,
+      "aesthetic_themes": ["Minimalist Modern", "Japanese Zen", "Classic Luxury"],
+      "finishes": ["Honed Black", "White"],
+      "smart_features": ["Voice Control", "Heated Seat", "Ambient Lighting", "UV Sanitization", "Auto Open/Close"],
+      "health_features": ["UV Wand Disinfection", "Warm Water Bidet Cleansing"],
+      "description": "Kohler's flagship intelligent toilet offering personalized cleansing and integrated ambient lighting."
+    },
+    {
+      "id": "KOH-TOI-002",
+      "name": "Veil One-Piece Elongated Smart Toilet",
+      "category": "toilet",
+      "sku": "K-5401-PA-0",
+      "price_usd": 4500,
+      "dimensions_in": { "width": 14.5, "depth": 26.1, "height": 21.0 },
+      "clearance_req_in": { "side_min": 15, "front_min": 21 },
+      "gpf": 1.28,
+      "aesthetic_themes": ["Minimalist Modern", "Japanese Zen"],
+      "finishes": ["White"],
+      "smart_features": ["Touchless Flush", "Bidet Wand", "Warm Air Dryer"],
+      "health_features": ["Dekoda Health Sensor Compatible", "Pulsating Bidet Therapy"],
+      "description": "Sculpted minimalist smart toilet with dual-flush technology and touchless lid control."
+    },
+    {
+      "id": "KOH-SHW-001",
+      "name": "Anthem Digital Thermostatic Showering System",
+      "category": "shower",
+      "sku": "K-28214-2MB",
+      "price_usd": 2800,
+      "dimensions_in": { "width": 36.0, "depth": 36.0, "height": 84.0 },
+      "clearance_req_in": { "side_min": 0, "front_min": 30 },
+      "gpm": 1.75,
+      "aesthetic_themes": ["Minimalist Modern", "Japanese Zen"],
+      "finishes": ["Vibrant Brushed Moderne Brass", "Matte Black"],
+      "smart_features": ["Multi-Outlet Digital Controller", "Konnect App Sync", "Preset Temperature Journeys"],
+      "health_features": ["Hydrotherapy Warm-Up/Cool-Down Routines"],
+      "description": "Digital showering engine providing precise temperature control and eco-water usage monitoring."
+    },
+    {
+      "id": "KOH-VAN-001",
+      "name": "Tailored 36-Inch Bathroom Vanity & Quartz Top",
+      "category": "vanity",
+      "sku": "K-99522-1WX",
+      "price_usd": 2200,
+      "dimensions_in": { "width": 36.0, "depth": 21.5, "height": 34.5 },
+      "clearance_req_in": { "side_min": 0, "front_min": 24 },
+      "gpm": 0.0,
+      "aesthetic_themes": ["Japanese Zen", "Minimalist Modern"],
+      "finishes": ["Mohair Grey", "Natural Oak"],
+      "smart_features": ["In-Drawer Power Outlets", "USB Charging Ports"],
+      "health_features": ["Ergonomic Height Alignment"],
+      "description": "Premium wood vanity offering modular interior drawer storage and charging station integration."
+    },
+    {
+      "id": "KOH-FAU-001",
+      "name": "Purist Touchless Single-Handle Faucet",
+      "category": "faucet",
+      "sku": "K-14402-4A-BL",
+      "price_usd": 680,
+      "dimensions_in": { "width": 6.5, "depth": 6.0, "height": 8.5 },
+      "clearance_req_in": { "side_min": 4, "front_min": 6 },
+      "gpm": 1.2,
+      "aesthetic_themes": ["Minimalist Modern", "Japanese Zen"],
+      "finishes": ["Matte Black", "French Gold"],
+      "smart_features": ["Touchless Response Sensor"],
+      "health_features": ["Touchless Hygienic Activation"],
+      "description": "Sleek architectural faucet featuring motion sensor activation to reduce contact contamination."
+    }
+  ]
+}
