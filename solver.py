@@ -1,81 +1,270 @@
+"""Deterministic bathroom bundle solver.
+
+The LLM (or regex fallback) only turns text into numbers. Everything below is
+plain code, so a returned bundle can never break the budget or the room:
+
+    total cost        <= budget
+    floor footprint   <= 40% of room area
+    clearances        enforced by layout.py (front / side / door swing)
+
+How a bundle is chosen
+----------------------
+1. Build EVERY combination (one toilet + shower + vanity + faucet).
+2. Drop combinations over budget or over the floor-usage limit.
+3. Rank the rest by score (theme fit > smart features > premium use of budget
+   > lower water flow). Ties break on product ids, so output is deterministic.
+4. Walk down the ranking and return the first one that has a valid layout.
+If nothing works, the result explains why and offers the closest alternative.
+"""
+import itertools
 import json
+import os
 
-def load_catalog(filepath='catalog.json'):
-    with open(filepath, 'r') as f:
-        return json.load(f).get('products', [])
+from layout import mount_faucet, place_fixtures, verify_layout
 
-def solve_bathroom_bundle(room_length_ft, room_width_ft, budget_usd, theme="Minimalist Modern"):
-    catalog = load_catalog()
-    
-    room_area_sqft = room_length_ft * room_width_ft
-    max_usable_sqft = room_area_sqft * 0.40 
-    
-    theme_matches = [p for p in catalog if theme in p.get('aesthetic_themes', [])]
-    if not theme_matches:
-        theme_matches = catalog
+CATALOG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "catalog.json")
 
-    categories = ['toilet', 'shower', 'vanity', 'faucet']
-    bundle = []
-    total_cost = 0
-    total_footprint_sqft = 0
-    
-    # Track water consumption separately per metric
-    total_gpf = 0.0
-    total_gpm = 0.0
+CATEGORIES = ("toilet", "shower", "vanity", "faucet")
+FLOOR_USAGE_LIMIT = 0.40          # fixtures may cover at most 40% of the floor
+MAX_LAYOUT_ATTEMPTS = 24          # distinct layout searches per request (latency cap)
 
-    for cat in categories:
-        cat_products = [p for p in theme_matches if p['category'] == cat]
-        if not cat_products:
-            cat_products = [p for p in catalog if p['category'] == cat]
-            
-        cat_products.sort(key=lambda x: x['price_usd'])
-        
-        selected = None
-        for p in cat_products:
-            dims = p['dimensions_in']
-            footprint = (dims['width'] * dims['depth']) / 144.0
-            
-            if (total_cost + p['price_usd'] <= budget_usd) and ((total_footprint_sqft + footprint) <= max_usable_sqft):
-                selected = p
-                
-        if not selected and cat_products:
-            selected = cat_products[0]
+# Ranking weights (higher score wins)
+THEME_WEIGHT = 100                # per item that matches the requested theme
+SMART_WEIGHT = 5                  # per smart feature, only if user wants smart
+BUDGET_USE_WEIGHT = 20            # rewards using the budget on a higher tier
+WATER_WEIGHT = 3                  # penalty per unit of rated flow (GPF + GPM)
 
-        if selected:
-            bundle.append(selected)
-            total_cost += selected['price_usd']
-            dims = selected['dimensions_in']
-            total_footprint_sqft += (dims['width'] * dims['depth']) / 144.0
-            
-            # Accumulate flow rates properly
-            if 'gpf' in selected and selected['gpf'] > 0:
-                total_gpf += selected['gpf']
-            if 'gpm' in selected and selected['gpm'] > 0:
-                total_gpm += selected['gpm']
+# Water model. These are ASSUMPTIONS - change them in one place if you can cite better figures.
+LEGACY = {"gpf": 3.5, "shower_gpm": 2.5, "faucet_gpm": 2.2}
+USAGE_PER_PERSON_PER_DAY = {"flushes": 5, "shower_min": 8, "faucet_min": 2}
 
-    space_utilization_pct = round((total_footprint_sqft / room_area_sqft) * 100, 1)
-    
-    # Eco Calculation (Household of 2: 8 flushes/day + 10 min shower/day)
-    # Legacy Baseline: 3.5 GPF toilet + 2.5 GPM showerhead
-    legacy_annual_gal = (3.5 * 8 + 2.5 * 10) * 365
-    selected_annual_gal = (total_gpf * 8 + total_gpm * 10) * 365
-    
-    annual_water_savings_gal = max(0, round(legacy_annual_gal - selected_annual_gal, 0))
 
-    return {
-        "room_dimensions_ft": {"length": room_length_ft, "width": room_width_ft},
-        "budget_cap_usd": budget_usd,
-        "selected_theme": theme,
-        "total_bundle_cost_usd": total_cost,
-        "space_utilization_pct": space_utilization_pct,
-        "annual_water_savings_gal": annual_water_savings_gal,
-        "budget_compliant": total_cost <= budget_usd,
-        "bundle": bundle
-    }
+# ------------------------------------------------------------------ catalog --
+def load_catalog(filepath=CATALOG_PATH):
+    with open(filepath, "r", encoding="utf-8") as f:
+        return json.load(f).get("products", [])
 
-if __name__ == '__main__':
-    res = solve_bathroom_bundle(10, 8, 10000, "Japanese Zen")
-    print("Solver Test Output:")
-    print(f"Items Selected: {len(res['bundle'])}")
-    print(f"Total Cost: ${res['total_bundle_cost_usd']}")
-    print(f"Water Savings: {res['annual_water_savings_gal']} Gal/yr")
+
+def price_of(p):
+    for key in ("price_inr", "price_usd"):
+        if key in p:
+            return float(p[key])
+    raise KeyError(f"{p.get('id')} has no price_inr / price_usd")
+
+
+def currency_of(products):
+    return "INR" if any("price_inr" in p for p in products) else "USD"
+
+
+def _floor_sqft(p):
+    """Faucets sit on the vanity, so they use no floor space."""
+    if p["category"] == "faucet":
+        return 0.0
+    d = p["dimensions_in"]
+    return d["width"] * d["depth"] / 144.0
+
+
+def _fx(p):
+    d, c = p["dimensions_in"], p.get("clearance_req_in", {})
+    return {"category": p["category"], "width": d["width"], "depth": d["depth"],
+            "side_min": c.get("side_min", 0), "front_min": c.get("front_min", 0)}
+
+
+def _money(x, currency):
+    """Format for messages: $12,000 or ₹6,00,000 (Indian digit grouping)."""
+    n = int(round(x))
+    if currency != "INR":
+        return f"${n:,}"
+    digits = str(abs(n))
+    if len(digits) > 3:
+        head, tail, groups = digits[:-3], digits[-3:], []
+        while len(head) > 2:
+            groups.insert(0, head[-2:])
+            head = head[:-2]
+        if head:
+            groups.insert(0, head)
+        digits = ",".join(groups + [tail])
+    return "₹" + digits
+
+
+def _clean(x):
+    x = round(x, 2)
+    return int(x) if float(x).is_integer() else x
+
+
+# -------------------------------------------------------------------- water --
+def water_use(bundle, household):
+    """Annual water for the bundle vs a legacy baseline. Toilet, shower and faucet
+    are modelled separately (each with its own usage minutes / flush count)."""
+    by_cat = {p["category"]: p for p in bundle}
+    gpf = by_cat.get("toilet", {}).get("gpf", LEGACY["gpf"])
+    shower = by_cat.get("shower", {}).get("gpm", LEGACY["shower_gpm"])
+    faucet = by_cat.get("faucet", {}).get("gpm", LEGACY["faucet_gpm"])
+    u = USAGE_PER_PERSON_PER_DAY
+
+    def annual(g, s, f):
+        return household * 365 * (u["flushes"] * g + u["shower_min"] * s + u["faucet_min"] * f)
+
+    ours = annual(gpf, shower, faucet)
+    legacy = annual(LEGACY["gpf"], LEGACY["shower_gpm"], LEGACY["faucet_gpm"])
+    saved = max(0.0, legacy - ours)
+    return {"annual_gal": round(ours), "legacy_annual_gal": round(legacy),
+            "saved_gal": round(saved), "saved_pct": round(100 * saved / legacy, 1) if legacy else 0.0,
+            "household": household}
+
+
+# ------------------------------------------------------------------ ranking --
+def _rank_key(combo, cost, budget, theme, smart):
+    score = THEME_WEIGHT * sum(theme in p.get("aesthetic_themes", []) for p in combo)
+    if smart:
+        score += SMART_WEIGHT * sum(len(p.get("smart_features", [])) for p in combo)
+    score += BUDGET_USE_WEIGHT * (cost / budget)
+    score -= WATER_WEIGHT * sum(p.get("gpf", 0) + p.get("gpm", 0) for p in combo)
+    return (-score, tuple(p["id"] for p in combo))
+
+
+class _LayoutSearch:
+    """Caches layouts by fixture geometry so repeated dimensions are solved once."""
+
+    def __init__(self, width_in, length_in):
+        self.W, self.L = width_in, length_in
+        self.cache, self.attempts = {}, 0
+
+    def for_combo(self, combo):
+        floor = [p for p in combo if p["category"] != "faucet"]
+        key = tuple(sorted((f["category"], f["width"], f["depth"], f["side_min"], f["front_min"])
+                           for f in map(_fx, floor)))
+        if key not in self.cache:
+            if self.attempts >= MAX_LAYOUT_ATTEMPTS:
+                return "limit"
+            self.attempts += 1
+            self.cache[key] = place_fixtures(self.W, self.L, [_fx(p) for p in floor])
+        raw = self.cache[key]
+        if raw is None:
+            return None
+        by_cat = {p["category"]: p for p in combo}
+        placements = []
+        for r in raw:
+            item = by_cat[r["category"]]
+            placements.append(dict(r, id=item["id"], name=item["name"]))
+        vanity = next(p for p in placements if p["category"] == "vanity")
+        faucet = mount_faucet(_fx(by_cat["faucet"]), vanity, self.W, self.L)
+        if faucet:
+            faucet.update(id=by_cat["faucet"]["id"], name=by_cat["faucet"]["name"])
+            placements.append(faucet)
+        return placements
+
+
+# --------------------------------------------------------------------- main --
+def solve_bathroom_bundle(room_length_ft, room_width_ft, budget, theme="Minimalist Modern",
+                          household=2, prioritize_smart=False, catalog=None):
+    if room_length_ft <= 0 or room_width_ft <= 0 or budget <= 0 or household < 1:
+        raise ValueError("length, width, budget and household must be positive")
+
+    products = catalog if catalog is not None else load_catalog()
+    currency = currency_of(products)
+    by_cat = {c: [p for p in products if p["category"] == c] for c in CATEGORIES}
+    missing = [c for c, items in by_cat.items() if not items]
+    if missing:
+        raise ValueError(f"catalog has no products for: {', '.join(missing)}")
+
+    W_in, L_in = room_width_ft * 12.0, room_length_ft * 12.0
+    area_sqft = room_length_ft * room_width_ft
+    limit_sqft = area_sqft * FLOOR_USAGE_LIMIT
+
+    inputs = {"length_ft": room_length_ft, "width_ft": room_width_ft, "budget": budget,
+              "theme": theme, "household": household, "prioritize_smart": bool(prioritize_smart)}
+
+    combos = []
+    for combo in itertools.product(*(by_cat[c] for c in CATEGORIES)):
+        cost = sum(price_of(p) for p in combo)
+        foot = sum(_floor_sqft(p) for p in combo)
+        combos.append((combo, cost, foot))
+
+    space_ok = [c for c in combos if c[2] <= limit_sqft + 1e-9]
+    affordable = sorted((c for c in space_ok if c[1] <= budget + 1e-9),
+                        key=lambda c: _rank_key(c[0], c[1], budget, theme, prioritize_smart))
+
+    search = _LayoutSearch(W_in, L_in)
+
+    def first_valid(candidates):
+        for combo, cost, foot in candidates:
+            placements = search.for_combo(combo)
+            if placements == "limit":
+                return None
+            if placements:
+                return combo, cost, foot, placements
+        return None
+
+    hit = first_valid(affordable)
+    if hit is None and space_ok:
+        # Nothing ranked-and-affordable placed; try cheapest-first in case a
+        # lower-ranked affordable bundle does fit.
+        cheapest = sorted(space_ok, key=lambda c: (c[1], tuple(p["id"] for p in c[0])))
+        alt = first_valid(cheapest)
+        if alt and alt[1] <= budget + 1e-9:
+            hit = alt
+
+    if hit:
+        combo, cost, foot, placements = hit
+        problems = verify_layout(placements, W_in, L_in)
+        theme_hits = sum(theme in p.get("aesthetic_themes", []) for p in combo)
+        checks = [
+            {"name": "Budget", "passed": cost <= budget + 1e-9,
+             "detail": f"{_money(cost, currency)} of {_money(budget, currency)} ({round(100 * cost / budget)}%)"},
+            {"name": "Floor usage", "passed": foot <= limit_sqft + 1e-9,
+             "detail": f"{foot:.1f} of {limit_sqft:.1f} sq ft allowed ({FLOOR_USAGE_LIMIT:.0%} of floor)"},
+            {"name": "Clearances", "passed": not any("clearance" in x for x in problems),
+             "detail": "Front and side clearances free of other fixtures"},
+            {"name": "Door swing", "passed": not any("door" in x for x in problems),
+             "detail": "Door arc is unobstructed"},
+            {"name": "No overlaps", "passed": not any("overlaps" in x or "outside" in x for x in problems),
+             "detail": "All fixtures sit inside the room without colliding"},
+        ]
+        return {
+            "status": "ok",
+            "message": "Valid bundle found.",
+            "inputs": inputs,
+            "currency": currency,
+            "bundle": list(combo),
+            "layout": {"room_in": {"width": W_in, "length": L_in}, "placements": placements,
+                       "door": {"width": 30, "wall": "bottom", "corner": "left"}},
+            "metrics": {
+                "total_cost": _clean(cost), "budget": _clean(budget),
+                "budget_used_pct": round(100 * cost / budget, 1),
+                "floor_area_sqft": round(area_sqft, 1), "footprint_sqft": round(foot, 1),
+                "space_utilization_pct": round(100 * foot / area_sqft, 1),
+                "theme_fit": {"matched": theme_hits, "of": len(combo), "theme": theme},
+                "water": water_use(combo, household),
+            },
+            "checks": checks,
+            "alternative": None,
+        }
+
+    return _infeasible(inputs, currency, combos, space_ok, limit_sqft, area_sqft, budget, first_valid)
+
+
+def _infeasible(inputs, currency, combos, space_ok, limit_sqft, area_sqft, budget, first_valid):
+    reasons, alternative = [], None
+    if not space_ok:
+        smallest = min(c[2] for c in combos)
+        needed_area = smallest / FLOOR_USAGE_LIMIT
+        reasons.append(f"Room too small: the smallest fixture set needs {smallest:.1f} sq ft of floor, "
+                       f"but only {limit_sqft:.1f} sq ft ({FLOOR_USAGE_LIMIT:.0%} of {area_sqft:.0f}) is allowed. "
+                       f"Try at least {needed_area:.0f} sq ft.")
+    else:
+        cheapest = sorted(space_ok, key=lambda c: (c[1], tuple(p["id"] for p in c[0])))
+        alt = first_valid(cheapest)
+        if alt:
+            combo, cost, foot, placements = alt
+            alternative = {"bundle": list(combo), "total_cost": _clean(cost),
+                           "over_budget_by": _clean(cost - budget),
+                           "layout": {"placements": placements}}
+            reasons.append(f"Budget too low: the cheapest bundle that fits this room costs "
+                           f"{_money(cost, currency)}, which is {_money(cost - budget, currency)} over budget.")
+        else:
+            reasons.append("No collision-free layout with the required clearances and door swing "
+                           "exists for this room. Try a larger or squarer room.")
+    return {"status": "infeasible", "message": reasons[0], "reasons": reasons, "inputs": inputs,
+            "currency": currency, "bundle": [], "layout": None, "metrics": None, "checks": [],
+            "alternative": alternative}

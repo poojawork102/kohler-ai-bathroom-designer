@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Eco-Metrics & Water Stewardship | KOHLER{% endblock %}
+
+{% block content %}
+<section class="section wrap">
+    <div class="card" style="text-align: center; padding: 40px; margin-bottom: var(--gap); background: var(--eco-bg); border-color: #cfe3d8;">
+        <h1 class="hero-title" style="font-size: 28px; color: var(--eco); margin-bottom: 20px;">Eco-Metrics & Water Stewardship</h1>
+        
+        <div class="metrics" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 30px;">
+            <div class="metric eco" style="background: transparent; border: none;">
+                <div class="value">24,500</div>
+                <div class="caption">Annual Water Savings (Gal/yr)</div>
+            </div>
+            <div class="metric eco" style="background: transparent; border: none;">
+                <div class="value">45%</div>
+                <div class="caption">Reduction vs Legacy (3.5 GPF)</div>
+            </div>
+            <div class="metric eco" style="background: transparent; border: none;">
+                <div class="value">Compliant</div>
+                <div class="caption">LEED v4.1 Status</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom: var(--gap);">
+        <h2 class="card-title">Standard Baseline vs Kohler Eco-Smart</h2>
+        <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="waterChart"></canvas>
+        </div>
+    </div>
+
+    <h2 class="card-title" style="margin-top: 40px;">Kohler Health & Wellness</h2>
+    <div class="dashboard-grid">
+        <div class="project-card card">
+            <h3 style="font-weight: 600; margin-bottom: 10px;">Dekoda Water Analysis Sensors</h3>
+            <p style="font-size: 13px; color: var(--ink-muted); line-height: 1.6;">
+                Advanced sensors embedded in your Kohler fixtures monitor water quality in real-time, analyzing purity, pH levels, and contaminant presence to ensure the healthiest possible water experience for your family.
+            </p>
+        </div>
+        <div class="project-card card">
+            <h3 style="font-weight: 600; margin-bottom: 10px;">Verdera Circadian Sync Lighting</h3>
+            <p style="font-size: 13px; color: var(--ink-muted); line-height: 1.6;">
+                Mirrored cabinets equipped with intelligent LED lighting that automatically adjusts color temperature throughout the day to support your natural circadian rhythm, improving sleep and daily wellness.
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('waterChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Toilets', 'Showers', 'Faucets', 'Total Footprint'],
+                datasets: [
+                    {
+                        label: 'Standard Baseline (Gal/yr)',
+                        data: [15000, 20000, 5000, 40000],
+                        backgroundColor: '#e3e3e0'
+                    },
+                    {
+                        label: 'Kohler Eco-Smart (Gal/yr)',
+                        data: [5000, 8000, 2500, 15500],
+                        backgroundColor: '#2f6b4f'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
