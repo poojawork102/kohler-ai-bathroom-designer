@@ -54,7 +54,8 @@
     }
   }
 
-  async function fromPrompt() {
+  async function fromPrompt(ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
     const json = await requestDesign({ prompt: $("promptInput").value });
     if (!json) return;
     syncControls(json.parsed);
@@ -179,69 +180,19 @@
   /* -------------------------------------------------------- floorplan ---- */
   function calculateDynamicPositions(roomWidthInches, roomHeightInches, fixtures) {
       let placedFixtures = [];
-      const clearance = 15; // 15 inches standard clearance
       
       fixtures.forEach(fixture => {
           let f = { ...fixture }; 
           const type = f.category ? f.category.toLowerCase() : '';
           
-          if (type.includes('shower') || type.includes('tub')) {
-              f.side = "top";
-              f.w = f.u_len; f.d = f.v_len;
-              f.x = 0;
-              f.y = 0;
-          } else if (type.includes('toilet') || type.includes('wc')) {
-              f.side = "top";
-              f.w = f.u_len; f.d = f.v_len;
-              let existingShower = placedFixtures.find(p => p.category.toLowerCase().includes('shower'));
-              if (existingShower) {
-                  f.x = existingShower.x + existingShower.w + clearance;
-              } else {
-                  f.x = clearance;
-              }
-              f.y = 0;
-              
-              if (f.x + f.w > roomWidthInches) {
-                  f.x = roomWidthInches - f.w - 2; 
-              }
-          } else if (type.includes('vanity') || type.includes('sink')) {
-              f.side = "bottom";
-              f.w = f.u_len; f.d = f.v_len;
-              f.x = roomWidthInches - f.w;
-              f.y = roomHeightInches - f.d;
-              
-              let existingToilet = placedFixtures.find(p => p.category.toLowerCase().includes('toilet'));
-              if (existingToilet && (f.y < existingToilet.y + existingToilet.d)) {
-                  f.x = 0;
-              }
-          } else if (type.includes('faucet')) {
-              let vanity = placedFixtures.find(p => p.category.toLowerCase().includes('vanity'));
-              if (vanity) {
-                  f.side = vanity.side;
-                  f.w = f.u_len; f.d = f.v_len;
-                  f.x = vanity.x + (vanity.w - f.w) / 2;
-                  f.y = vanity.y; 
-              } else {
-                  f.x = 0; f.y = 0;
-              }
-          } else {
-              f.x = roomWidthInches / 2;
-              f.y = roomHeightInches / 2;
-          }
+          // 1. Trust the backend coordinates (which now come from Gemini)
+          f.w = f.u_len; f.d = f.v_len;
           
-          // ========================================================
-          // THE MAGIC FIX: STRICT BOUNDARY CLAMPING
-          // This mathematically guarantees no fixture can EVER render 
-          // past the left, right, top, or bottom walls.
-          // ========================================================
-          f.x = Math.max(0, Math.min(f.x, roomWidthInches - (f.w || 36)));
-          f.y = Math.max(0, Math.min(f.y, roomHeightInches - (f.d || 22)));
+          if (type.includes('shower') || type.includes('tub')) f.side = "top";
+          else if (type.includes('toilet') || type.includes('wc')) f.side = "top";
+          else if (type.includes('vanity') || type.includes('sink')) f.side = "bottom";
+          else if (type.includes('faucet')) f.side = "bottom";
 
-          // Sync clearance box visually with new coordinates
-          if (f.clearance) {
-              f.clearance = { x: Math.max(0, f.x - 10), y: Math.max(0, f.y - 10), w: f.w + 20, d: f.d + 20 };
-          }
-          
           placedFixtures.push(f);
       });
       return placedFixtures;
@@ -367,6 +318,9 @@
     svg.innerHTML = `<g class="fp-grid">${grid}</g>${clear}
       ${door}${fixtures}${faucetShapes}${labels}${dims}
       <rect class="fp-wall" x="0" y="0" width="${W}" height="${L}" fill="none" style="stroke-width: 4px !important; pointer-events: none;" />`;
+      
+    // Save the entire SVG to memory for the Sustainability page injection hack
+    localStorage.setItem('saved_kohler_canvas', svg.outerHTML);
   }
 
   /* ------------------------------------------------------------ init ---- */

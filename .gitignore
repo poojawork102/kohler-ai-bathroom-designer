@@ -1,5 +1,17 @@
+# Environment Variables & Secrets (CRITICAL)
+.env
+
+# Python Cache (Visible in your VS Code sidebar)
 __pycache__/
 *.pyc
-.env
-.venv/
-.vscode/
+*.pyo
+
+# Machine Learning Models (Keeps your repo lightweight)
+*.pkl
+
+# Virtual Environments
+venv/
+env/
+
+# OS Generated Files
+.DS_Store

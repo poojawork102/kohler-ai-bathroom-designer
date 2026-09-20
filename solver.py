@@ -268,3 +268,29 @@ def _infeasible(inputs, currency, combos, space_ok, limit_sqft, area_sqft, budge
     return {"status": "infeasible", "message": reasons[0], "reasons": reasons, "inputs": inputs,
             "currency": currency, "bundle": [], "layout": None, "metrics": None, "checks": [],
             "alternative": alternative}
+
+def clamp_coordinates(placements, width_in, length_in):
+    """
+    Intercepts and sanitizes generative AI coordinates (e.g. from Gemini) to enforce 
+    strict physical constraints and IBC clearances.
+    """
+    W_in, L_in = float(width_in), float(length_in)
+    
+    # 1. Wall Boundary Clamping (Physical Fixture Only)
+    for p in placements:
+        raw_x = p.get("x", 0)
+        raw_y = p.get("y", 0)
+        
+        # Simply bump against the walls (with a 1-inch visual margin to prevent stroke clipping)
+        margin = 1
+        p["x"] = max(margin, min(raw_x, W_in - p.get("w", 0) - margin))
+        p["y"] = max(margin, min(raw_y, L_in - p.get("d", 0) - margin))
+        
+        c = p.get("clearance")
+        if c:
+            cx_offset = c["x"] - p.get("original_x", raw_x)
+            cy_offset = c["y"] - p.get("original_y", raw_y)
+            p["clearance"]["x"] = p["x"] + cx_offset
+            p["clearance"]["y"] = p["y"] + cy_offset
+            
+    return placements

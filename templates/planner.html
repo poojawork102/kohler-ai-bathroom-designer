@@ -431,17 +431,17 @@
   /* Briefing Panel Inputs */
   .brief-textarea {
       font-family: 'Montserrat', sans-serif !important;
-      font-size: 14px !important;
+      font-size: 16px !important;
       font-weight: 500 !important;
       color: #111111 !important;
   }
   
   .preset-pill {
-      font-size: 12px !important;
+      font-size: 14px !important;
   }
   
   .slider-meta {
-      font-size: 12px !important;
+      font-size: 14px !important;
   }
   
   /* Fix the Cartoony Total Cost Metric */
@@ -650,78 +650,80 @@
             </div>
             <p class="assumed" id="assumed" hidden style="font-size: 11px; color: #D32F2F; margin-bottom: 12px;"></p>
 
-            <div class="control-slider-group">
-                <div class="slider-row">
-                    <div class="slider-meta"><span>LENGTH</span><span id="lengthVal">10 ft</span></div>
-                    <input type="range" id="lengthRange" class="styled-range" min="6" max="18" value="10">
-                </div>
-                <div class="slider-row">
-                    <div class="slider-meta"><span>WIDTH</span><span id="widthVal">8 ft</span></div>
-                    <input type="range" id="widthRange" class="styled-range" min="5" max="16" value="8">
-                </div>
-                <div class="slider-row">
-                    <div class="slider-meta"><span>BUDGET ({{ currency }})</span></div>
-                    <input type="number" id="budgetRange" class="brief-textarea" style="min-height:auto; padding:8px 12px; margin:0;" value="600000">
-                </div>
-                <div class="slider-row">
-                    <div class="slider-meta"><span>HOUSEHOLD SIZE</span><span id="householdVal">3</span></div>
-                    <input type="range" id="householdRange" class="styled-range" min="1" max="8" value="3">
-                </div>
-                <div class="slider-row">
-                    <div class="slider-meta"><span>DESIGN THEME</span></div>
-                    <!-- STRICT 3-OPTION THEME DROPDOWN -->
-                    <select id="styleSelect" class="brief-textarea" style="min-height:auto; padding:8px 12px; margin:0;">
-                        <option value="Minimalist Modern">Minimalist Modern</option>
-                        <option value="Japanese Zen">Japanese Zen</option>
-                        <option value="Classic Luxury">Classic Luxury</option>
-                    </select>
+            <form action="/sustainability" method="POST">
+                <div class="control-slider-group">
+                    <div class="slider-row">
+                        <div class="slider-meta"><span>LENGTH</span><span id="lengthVal">10 ft</span></div>
+                        <input type="range" id="lengthRange" name="length" class="styled-range" min="6" max="18" value="10">
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-meta"><span>WIDTH</span><span id="widthVal">8 ft</span></div>
+                        <input type="range" id="widthRange" name="width" class="styled-range" min="5" max="16" value="8">
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-meta"><span>BUDGET ({{ currency }})</span></div>
+                        <input type="number" id="budgetRange" name="budget" class="brief-textarea" style="min-height:auto; padding:8px 12px; margin:0;" value="600000">
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-meta"><span>HOUSEHOLD SIZE</span><span id="householdVal">3</span></div>
+                        <input type="range" id="householdRange" name="household_size" class="styled-range" min="1" max="8" value="3">
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-meta"><span>DESIGN THEME</span></div>
+                        <!-- STRICT 3-OPTION THEME DROPDOWN -->
+                        <select id="styleSelect" class="brief-textarea" style="min-height:auto; padding:8px 12px; margin:0;">
+                            <option value="Minimalist Modern">Minimalist Modern</option>
+                            <option value="Japanese Zen">Japanese Zen</option>
+                            <option value="Classic Luxury">Classic Luxury</option>
+                        </select>
 
-                    <!-- CURATED FIXTURE FINISHES -->
-                    <div class="custom-colors-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #E8E6DF;">
-                        <label style="font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #111;">CURATED KOHLER FINISHES</label>
-                        
-                        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
+                        <!-- CURATED FIXTURE FINISHES -->
+                        <div class="custom-colors-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #E8E6DF;">
+                            <label style="font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #111;">CURATED KOHLER FINISHES</label>
                             
-                            <!-- Hardware Finishes -->
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <label style="font-size: 10px; font-weight: 600;">HARDWARE</label>
-                                <div class="swatch-group" id="swatchHardware">
-                                    <div class="swatch active" data-color="#B89758" style="background: #B89758;" title="Vibrant Brushed Bronze"></div>
-                                    <div class="swatch" data-color="#222222" style="background: #222222;" title="Matte Black"></div>
-                                    <div class="swatch" data-color="#B0BEC5" style="background: #B0BEC5;" title="Polished Chrome"></div>
-                                    <div class="swatch" data-color="#FAFAFA" style="background: #FAFAFA; border: 1px solid #DFDFDF;" title="Matte White"></div>
+                            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
+                                
+                                <!-- Hardware Finishes -->
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <label style="font-size: 10px; font-weight: 600;">HARDWARE</label>
+                                    <div class="swatch-group" id="swatchHardware">
+                                        <div class="swatch active" data-color="#B89758" style="background: #B89758;" title="Vibrant Brushed Bronze"></div>
+                                        <div class="swatch" data-color="#222222" style="background: #222222;" title="Matte Black"></div>
+                                        <div class="swatch" data-color="#B0BEC5" style="background: #B0BEC5;" title="Polished Chrome"></div>
+                                        <div class="swatch" data-color="#FAFAFA" style="background: #FAFAFA; border: 1px solid #DFDFDF;" title="Matte White"></div>
+                                    </div>
                                 </div>
-                            </div>
-                    
-                            <!-- Shower Finishes -->
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <label style="font-size: 10px; font-weight: 600;">SHOWER</label>
-                                <div class="swatch-group" id="swatchShower">
-                                    <div class="swatch active" data-color="#5A7D8C" style="background: #5A7D8C;" title="Slate Blue"></div>
-                                    <div class="swatch" data-color="#E8E6DF" style="background: #E8E6DF;" title="Limestone"></div>
-                                    <div class="swatch" data-color="#4A4A4A" style="background: #4A4A4A;" title="Charcoal Tile"></div>
-                                    <div class="swatch" data-color="#FFFFFF" style="background: #FFFFFF; border: 1px solid #DFDFDF;" title="Pure White Tile"></div>
+                        
+                                <!-- Shower Finishes -->
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <label style="font-size: 10px; font-weight: 600;">SHOWER</label>
+                                    <div class="swatch-group" id="swatchShower">
+                                        <div class="swatch active" data-color="#5A7D8C" style="background: #5A7D8C;" title="Slate Blue"></div>
+                                        <div class="swatch" data-color="#E8E6DF" style="background: #E8E6DF;" title="Limestone"></div>
+                                        <div class="swatch" data-color="#4A4A4A" style="background: #4A4A4A;" title="Charcoal Tile"></div>
+                                        <div class="swatch" data-color="#FFFFFF" style="background: #FFFFFF; border: 1px solid #DFDFDF;" title="Pure White Tile"></div>
+                                    </div>
                                 </div>
-                            </div>
-                    
-                            <!-- Vanity Finishes -->
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <label style="font-size: 10px; font-weight: 600;">VANITY</label>
-                                <div class="swatch-group" id="swatchVanity">
-                                    <div class="swatch active" data-color="#8B7355" style="background: #8B7355;" title="Natural Oak"></div>
-                                    <div class="swatch" data-color="#606060" style="background: #606060;" title="Mohair Grey"></div>
-                                    <div class="swatch" data-color="#FFFFFF" style="background: #FFFFFF; border: 1px solid #CCC;" title="Gloss White"></div>
+                        
+                                <!-- Vanity Finishes -->
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <label style="font-size: 10px; font-weight: 600;">VANITY</label>
+                                    <div class="swatch-group" id="swatchVanity">
+                                        <div class="swatch active" data-color="#8B7355" style="background: #8B7355;" title="Natural Oak"></div>
+                                        <div class="swatch" data-color="#606060" style="background: #606060;" title="Mohair Grey"></div>
+                                        <div class="swatch" data-color="#FFFFFF" style="background: #FFFFFF; border: 1px solid #CCC;" title="Gloss White"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    <label style="font-size:11px; font-weight:700; display:flex; align-items:center; gap:8px; margin-top:6px; cursor:pointer;">
+                        <input type="checkbox" id="smartCheck" name="smart_features" checked> Prioritise Smart / Intelligent Features
+                    </label>
+                    <p style="font-size: 10px; color: #888; margin: 2px 0 0 20px; font-family: 'Montserrat', sans-serif;">Influences hardware tier recommendations on the Sustainability Report.</p>
                 </div>
-                <label style="font-size:11px; font-weight:700; display:flex; align-items:center; gap:8px; margin-top:6px; cursor:pointer;">
-                    <input type="checkbox" id="smartCheck" checked> Prioritise Smart / Intelligent Features
-                </label>
-            </div>
-
-            <button id="generateBtn" class="btn-submit-plan">GENERATE SPECIFICATION &rarr;</button>
+                <button type="button" id="generateBtn" class="btn-submit-plan">GENERATE DESIGN</button>
+            </form>
         </div>
 
         <!-- Center: CAD Drafting Board -->

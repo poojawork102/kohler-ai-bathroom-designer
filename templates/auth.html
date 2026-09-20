@@ -3,63 +3,41 @@
 
 {% block content %}
 <section class="section wrap" style="display: flex; justify-content: center; padding: 60px 24px;">
-    <div class="auth-container card" style="width: 100%; max-width: 400px;">
-        <div class="auth-tabs">
-            <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">SIGN IN</button>
-            <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">SIGN UP</button>
-        </div>
+<div style="background: #FFFFFF; width: 400px; margin: 60px auto; padding: 45px 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); border-radius: 8px; text-align: center; border-top: 4px solid #111;">
+    
+    <!-- Bold KOHLER Logo -->
+    <h1 style="font-family: 'Montserrat', sans-serif; font-size: 28px; font-weight: 900; letter-spacing: 6px; color: #111; margin: 0 0 30px 0; text-transform: uppercase;">KOHLER</h1>
 
-        <form id="form-login" class="auth-form" action="{{ url_for('login') }}" method="POST">
-            <h2 class="card-title" style="text-align: center; margin-top: 20px;">Welcome Back</h2>
-            <div class="field" style="margin-bottom: 16px;">
-                <label for="login-email">Email Address</label>
-                <input type="email" id="login-email" name="email" required>
-            </div>
-            <div class="field" style="margin-bottom: 24px;">
-                <label for="login-password">Password</label>
-                <input type="password" id="login-password" name="password" required>
-            </div>
-            <button type="submit" class="btn" style="width: 100%;">SIGN IN</button>
-            
-            <div style="margin: 20px 0; text-align: center; color: var(--ink-muted); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;">or</div>
-            
-            <button type="submit" class="btn btn-ghost" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <svg width="18" height="18" viewBox="0 0 48 48">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                </svg>
-                CONTINUE WITH GOOGLE
-            </button>
-        </form>
-
-        <form id="form-signup" class="auth-form" style="display: none;" action="{{ url_for('login') }}" method="POST">
-            <h2 class="card-title" style="text-align: center; margin-top: 20px;">Create an Account</h2>
-            <div class="field" style="margin-bottom: 16px;">
-                <label for="signup-name">Full Name</label>
-                <input type="text" id="signup-name" name="name" required>
-            </div>
-            <div class="field" style="margin-bottom: 16px;">
-                <label for="signup-email">Email Address</label>
-                <input type="email" id="signup-email" name="email" required>
-            </div>
-            <div class="field" style="margin-bottom: 16px;">
-                <label for="signup-password">Password</label>
-                <input type="password" id="signup-password" name="password" required>
-            </div>
-            <div class="field" style="margin-bottom: 24px;">
-                <label for="signup-profession">Profession</label>
-                <select id="signup-profession" name="profession" required>
-                    <option value="" disabled selected>Select your profession</option>
-                    <option value="Homeowner">Homeowner</option>
-                    <option value="Architect">Architect</option>
-                    <option value="Interior Designer">Interior Designer</option>
-                </select>
-            </div>
-            <button type="submit" class="btn" style="width: 100%;">SIGN UP</button>
-        </form>
+    <!-- Tabs -->
+    <div style="display: flex; justify-content: center; border-bottom: 1px solid #EEE; margin-bottom: 35px; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 1px;">
+        <div style="padding: 10px 20px; border-bottom: 2px solid #111; color: #111; cursor: pointer;">SIGN IN</div>
+        <div style="padding: 10px 20px; color: #999; cursor: pointer; transition: color 0.2s;">SIGN UP</div>
     </div>
+
+    <!-- Headers -->
+    <h2 style="font-family: 'Playfair Display', serif; font-size: 26px; color: #111; margin: 0;">Welcome Back</h2>
+    <p style="font-family: 'Montserrat', sans-serif; font-size: 10px; color: #666; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 8px; margin-bottom: 30px;">AI Spatial Studio Workspace</p>
+
+    <!-- Form -->
+    <form action="/studio" method="POST" style="text-align: left;">
+        
+        <label style="font-family: 'Montserrat', sans-serif; font-size: 10px; color: #444; font-weight: 700; letter-spacing: 1px; display: block; margin-bottom: 8px;">EMAIL ADDRESS</label>
+        <input type="email" value="designer@kohler.com" style="width: 100%; padding: 14px 15px; margin-bottom: 20px; border: 1px solid #DDD; border-radius: 4px; font-family: 'Montserrat', sans-serif; font-size: 14px; background: #FAFAFA; box-sizing: border-box; outline: none;">
+
+        <label style="font-family: 'Montserrat', sans-serif; font-size: 10px; color: #444; font-weight: 700; letter-spacing: 1px; display: block; margin-bottom: 8px;">PASSWORD</label>
+        <input type="password" value="kohlerdemo2026" style="width: 100%; padding: 14px 15px; margin-bottom: 30px; border: 1px solid #DDD; border-radius: 4px; font-family: 'Montserrat', sans-serif; font-size: 14px; background: #FAFAFA; box-sizing: border-box; outline: none;">
+
+        <button type="submit" style="width: 100%; background: #111; color: #FFF; padding: 16px; border: none; border-radius: 4px; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 2px; cursor: pointer; margin-bottom: 20px; transition: background 0.2s;">SIGN IN</button>
+        
+        <div style="text-align: center; font-family: 'Montserrat', sans-serif; font-size: 10px; color: #999; margin-bottom: 20px;">OR</div>
+        
+        <button type="button" style="width: 100%; background: #FFF; color: #111; padding: 14px; border: 1px solid #CCC; border-radius: 4px; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: background 0.2s;">
+            <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            CONTINUE WITH GOOGLE
+        </button>
+
+    </form>
+</div>
 </section>
 {% endblock %}
 
