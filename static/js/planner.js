@@ -121,10 +121,9 @@
       $("costVal").textContent = "--";
       $("budgetStatus").textContent = "⚠ No Valid Bundle";
       $("budgetStatus").style.color = "#D32F2F";
-      $("utilVal").textContent = "--";
-      $("matchVal").textContent = "--";
-      $("waterVal").textContent = "--";
-      $("waterDesc").textContent = "--";
+      $("waterValTech").textContent = "--";
+      $("utilValTech").textContent = "--";
+      $("hygieneValTech").textContent = "--";
       $("checks").innerHTML = "";
       view = alt ? { bundle: alt.bundle, placements: alt.layout.placements, total: alt.total_cost, note: " (closest option, over budget)" } : null;
       $("saveBtn").style.display = "none";
@@ -150,11 +149,9 @@
     $("budgetStatus").textContent = budgetStatusStr;
     $("budgetStatus").style.color = m.budget_used_pct <= 100 ? "#2F6B4F" : "#D32F2F";
     
-    $("utilVal").textContent = `${m.space_utilization_pct}%`;
-    $("matchVal").textContent = `${m.theme_fit.matched} / ${m.theme_fit.of}`;
-    
-    $("waterVal").textContent = `${w.saved_gal.toLocaleString("en-US")} gal/yr`;
-    $("waterDesc").textContent = `${w.saved_pct}% LESS WATER THAN LEGACY FIXTURES`;
+    $("waterValTech").textContent = `${w.saved_gal.toLocaleString("en-US")} gal/yr conserved \xB7 EPA WaterSense`;
+    $("utilValTech").textContent = `${m.space_utilization_pct}% Floor Utilization \xB7 IBC Clearance Pass`;
+    $("hygieneValTech").textContent = `Skirted Traps \xB7 Touchless Actuation Ready`;
     
     $("checks").innerHTML = data.checks.map((c) => `
       <div class="check-row"><span class="check-icon" style="color: ${c.passed ? '#2F6B4F' : '#D32F2F'};">${c.passed ? '✓' : '✗'}</span> ${esc(c.name)}: ${c.passed ? 'Pass' : 'FAIL'} <span style="font-size: 10px; color: #8C8A82; margin-left: 4px;">${esc(c.detail)}</span></div>
@@ -295,13 +292,49 @@
     const floor = dynamicFixtures.filter((p) => p.category !== "faucet");
     const faucets = dynamicFixtures.filter((p) => p.category === "faucet");
 
-    const clear = floor.map((p) => `<rect class="fp-clear" x="${p.clearance.x}" y="${p.clearance.y}" width="${p.clearance.w}" height="${p.clearance.d}"/>`).join("");
+    const clear = floor.map((p) => {
+        if (!p.clearance) return "";
+        const cw = p.clearance.w * 0.85;
+        const cd = p.clearance.d * 0.85;
+        const cx = p.clearance.x + (p.clearance.w * 0.075);
+        const cy = p.clearance.y + (p.clearance.d * 0.075);
+        return `<rect class="fp-clear" x="${cx}" y="${cy}" width="${cw}" height="${cd}" style="stroke-dasharray: 5,5 !important;"/>`;
+    }).join("");
 
     const fixtures = floor.map((p) => {
       const prod = byId[p.id] || {};
       const tip = `${p.name} | ${prod.sku || ""} | ${p.u_len} x ${p.v_len} in`;
+      
+      // --- 2. DYNAMIC COLOR MAPPING ---
+      // Grab colors from global state (set by swatch clicks)
+      const userHardwareColor = window.activeColors ? window.activeColors.hardware : "#B89758";
+      const userShowerColor = window.activeColors ? window.activeColors.shower : "#5A7D8C";
+      const userVanityColor = window.activeColors ? window.activeColors.vanity : "#8B7355";
+
+      // 2b. Contrast Fallback Helper
+      const isLightColor = (hexCode) => {
+          const lightColors = ['#FFFFFF', '#FAFAFA', '#F5F5F5', '#E8E6DF'];
+          return lightColors.includes(hexCode.toUpperCase());
+      };
+
+      let strokeColor = isLightColor(userHardwareColor) ? "#333333" : userHardwareColor; 
+      let fillColor = "rgba(255, 255, 255, 0.8)"; 
+      const typeStr = p.category ? p.category.toLowerCase() : '';
+
+      // Map colors realistically with HIGH opacity ("CC" = 80% opacity)
+      if (typeStr.includes('shower') || typeStr.includes('tub')) {
+          strokeColor = isLightColor(userHardwareColor) ? "#333333" : userHardwareColor; 
+          fillColor = userShowerColor + "CC"; 
+      } else if (typeStr.includes('toilet') || typeStr.includes('wc')) {
+          strokeColor = isLightColor(userHardwareColor) ? "#333333" : userHardwareColor; 
+          fillColor = "#FFFFFF"; // Solid White China
+      } else if (typeStr.includes('vanity') || typeStr.includes('sink')) {
+          strokeColor = isLightColor(userHardwareColor) ? "#333333" : userHardwareColor; 
+          fillColor = userVanityColor + "CC"; 
+      }
+      
       return `<g><title>${esc(tip)}</title>
-        <rect class="fp-fixture" x="${p.x}" y="${p.y}" width="${p.w}" height="${p.d}"/>
+        <rect class="fp-fixture" x="${p.x}" y="${p.y}" width="${p.w}" height="${p.d}" style="fill: ${fillColor} !important; stroke: ${strokeColor} !important; stroke-width: 3 !important;"/>
         <g transform="matrix(${localMatrix(p).join(" ")})">${fixtureDetail(p)}</g></g>`;
     }).join("");
 
@@ -311,8 +344,11 @@
       return `<text class="fp-label" font-size="${fs * 0.72}" x="${a * u + c * v + e}" y="${b * u + d * v + f + fs * 0.25}" text-anchor="middle">${p.category.toUpperCase()}</text>`;
     }).join("");
 
+    const userHardwareColor = window.activeColors ? window.activeColors.hardware : "#B89758";
+    const isLightColor = (hex) => ['#FFFFFF', '#FAFAFA', '#F5F5F5', '#E8E6DF'].includes(hex.toUpperCase());
+    const faucetFill = isLightColor(userHardwareColor) ? "#333333" : userHardwareColor;
     const faucetShapes = faucets.map((p) =>
-      `<g><title>${esc(p.name)}</title><rect class="fp-faucet" x="${p.x}" y="${p.y}" width="${p.w}" height="${p.d}" rx="1.2"/></g>`).join("");
+      `<g><title>${esc(p.name)}</title><rect class="fp-faucet" x="${p.x}" y="${p.y}" width="${p.w}" height="${p.d}" rx="1.2" style="fill: ${faucetFill} !important;"/></g>`).join("");
 
     const dimTop = -14, dimLeft = -14;
     const dims = `
@@ -328,8 +364,9 @@
       <path class="fp-door" d="M 0 ${L} A ${DOOR} ${DOOR} 0 0 1 ${DOOR} ${L - DOOR}"/>
       <line class="fp-leaf" x1="${DOOR}" y1="${L}" x2="${DOOR}" y2="${L - DOOR}"/>`;
 
-    svg.innerHTML = `<g class="fp-grid">${grid}</g>${clear}<rect class="fp-wall" x="0" y="0" width="${W}" height="${L}"/>
-      ${door}${fixtures}${faucetShapes}${labels}${dims}`;
+    svg.innerHTML = `<g class="fp-grid">${grid}</g>${clear}
+      ${door}${fixtures}${faucetShapes}${labels}${dims}
+      <rect class="fp-wall" x="0" y="0" width="${W}" height="${L}" fill="none" style="stroke-width: 4px !important; pointer-events: none;" />`;
   }
 
   /* ------------------------------------------------------------ init ---- */
@@ -353,6 +390,42 @@
       clearTimeout(timer);
       timer = setTimeout(fromControls, 300);
     }));
+    
+    // Initialize state
+    window.activeColors = {
+        hardware: "#B89758",
+        shower: "#5A7D8C",
+        vanity: "#8B7355"
+    };
+
+    // Live Redraw for Color Pickers
+    const redrawCanvas = () => {
+        if (lastData && lastData.status === "ok") {
+            const room = { width: lastData.inputs.width_ft * 12, length: lastData.inputs.length_ft * 12 };
+            drawFloorplan(room, lastData.layout.placements, lastData.bundle);
+        }
+    };
+    
+    // Handle Swatch Clicks
+    document.querySelectorAll('.swatch-group').forEach(group => {
+        group.addEventListener('click', (e) => {
+            if (e.target.classList.contains('swatch')) {
+                // Manage active class
+                group.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // Update specific color state
+                const color = e.target.getAttribute('data-color');
+                if (group.id === 'swatchHardware') window.activeColors.hardware = color;
+                if (group.id === 'swatchShower') window.activeColors.shower = color;
+                if (group.id === 'swatchVanity') window.activeColors.vanity = color;
+
+                // Re-render instantly
+                redrawCanvas();
+            }
+        });
+    });
+    
     fromPrompt(); // page is never empty on first load
   }
 

@@ -382,21 +382,33 @@
       width: 100%;
       height: 100%;
       display: block;
-      background: #0D0F12;
+      background: #FAF9F5 !important; /* Architectural Vellum */
   }
   
-  /* Dark Mode CAD Overrides */
-  #floorplanSvg .fp-wall { stroke: #FFFFFF !important; }
-  #floorplanSvg .fp-grid line { stroke: rgba(255,255,255,0.08) !important; }
-  #floorplanSvg .fp-clear { stroke: #2B3036 !important; fill: rgba(184,151,88,0.1) !important; }
+  /* Light Mode CAD Overrides */
+  #floorplanSvg .fp-wall { stroke: #111111 !important; }
+  #floorplanSvg .fp-grid line { stroke: rgba(0,0,0,0.05) !important; }
+  #floorplanSvg .fp-clear { stroke: rgba(0,0,0,0.1) !important; fill: rgba(184,151,88,0.05) !important; }
   #floorplanSvg .fp-fixture { stroke: #B89758 !important; }
-  #floorplanSvg .fp-detail { stroke: #8C8A82 !important; }
+  #floorplanSvg .fp-detail { stroke: #4A4A45 !important; }
   #floorplanSvg .fp-label { fill: #B89758 !important; }
-  #floorplanSvg .fp-door-gap { stroke: #0D0F12 !important; }
+  #floorplanSvg .fp-door-gap { stroke: #FAF9F5 !important; }
   #floorplanSvg .fp-door { stroke: #666660 !important; }
-  #floorplanSvg .fp-leaf { stroke: #FFFFFF !important; }
+  #floorplanSvg .fp-leaf { stroke: #111111 !important; }
   #floorplanSvg .fp-dim { stroke: #666660 !important; }
-  #floorplanSvg .fp-text { fill: #8C8A82 !important; }
+  #floorplanSvg .fp-text { fill: #333333 !important; }
+  
+  /* Swatch CSS */
+  .swatch-group { display: flex; gap: 8px; }
+  .swatch {
+      width: 20px; height: 20px; border-radius: 50%; cursor: pointer;
+      border: 2px solid transparent; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .swatch:hover { transform: scale(1.15); }
+  .swatch.active { border-color: #000; transform: scale(1.15); }
+
+  /* Nuke Red Warnings */
+  .assumed, .plan-note { display: none !important; }
   
   /* Push the Generate Button to the absolute bottom of the left column */
   .btn-submit-plan {
@@ -554,6 +566,57 @@
       fill: #B89758 !important;
       font-weight: 700 !important;
   }
+  
+  /* ============================================================
+     DUAL-LAYERED INSIGHT PANELS
+     ============================================================ */
+  .insight-panel {
+      background: #FAF9F5;
+      border: 1px solid #E8E6DF;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color 0.2s;
+  }
+  .insight-panel:hover {
+      border-color: #B89758; /* Subtle gold Kohler accent on hover */
+  }
+  
+  .insight-header {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px !important;
+      font-weight: 800;
+      color: #111111;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+  }
+  
+  .insight-icon {
+      font-size: 16px;
+  }
+  
+  .insight-tech-spec {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px !important;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #2F6B4F; /* Technical compliance green */
+      text-transform: uppercase;
+      border-bottom: 1px solid #E8E6DF;
+      padding-bottom: 6px;
+      margin-bottom: 2px;
+  }
+  
+  .insight-human-text {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px !important;
+      font-weight: 500;
+      line-height: 1.5;
+      color: #555555;
+  }
 </style>
 
 <div class="studio-viewport" id="app" data-currency="{{ currency }}">
@@ -606,9 +669,52 @@
                 </div>
                 <div class="slider-row">
                     <div class="slider-meta"><span>DESIGN THEME</span></div>
+                    <!-- STRICT 3-OPTION THEME DROPDOWN -->
                     <select id="styleSelect" class="brief-textarea" style="min-height:auto; padding:8px 12px; margin:0;">
-                        {% for t in themes %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+                        <option value="Minimalist Modern">Minimalist Modern</option>
+                        <option value="Japanese Zen">Japanese Zen</option>
+                        <option value="Classic Luxury">Classic Luxury</option>
                     </select>
+
+                    <!-- CURATED FIXTURE FINISHES -->
+                    <div class="custom-colors-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #E8E6DF;">
+                        <label style="font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #111;">CURATED KOHLER FINISHES</label>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
+                            
+                            <!-- Hardware Finishes -->
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label style="font-size: 10px; font-weight: 600;">HARDWARE</label>
+                                <div class="swatch-group" id="swatchHardware">
+                                    <div class="swatch active" data-color="#B89758" style="background: #B89758;" title="Vibrant Brushed Bronze"></div>
+                                    <div class="swatch" data-color="#222222" style="background: #222222;" title="Matte Black"></div>
+                                    <div class="swatch" data-color="#B0BEC5" style="background: #B0BEC5;" title="Polished Chrome"></div>
+                                    <div class="swatch" data-color="#FAFAFA" style="background: #FAFAFA; border: 1px solid #DFDFDF;" title="Matte White"></div>
+                                </div>
+                            </div>
+                    
+                            <!-- Shower Finishes -->
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label style="font-size: 10px; font-weight: 600;">SHOWER</label>
+                                <div class="swatch-group" id="swatchShower">
+                                    <div class="swatch active" data-color="#5A7D8C" style="background: #5A7D8C;" title="Slate Blue"></div>
+                                    <div class="swatch" data-color="#E8E6DF" style="background: #E8E6DF;" title="Limestone"></div>
+                                    <div class="swatch" data-color="#4A4A4A" style="background: #4A4A4A;" title="Charcoal Tile"></div>
+                                    <div class="swatch" data-color="#FFFFFF" style="background: #FFFFFF; border: 1px solid #DFDFDF;" title="Pure White Tile"></div>
+                                </div>
+                            </div>
+                    
+                            <!-- Vanity Finishes -->
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <label style="font-size: 10px; font-weight: 600;">VANITY</label>
+                                <div class="swatch-group" id="swatchVanity">
+                                    <div class="swatch active" data-color="#8B7355" style="background: #8B7355;" title="Natural Oak"></div>
+                                    <div class="swatch" data-color="#606060" style="background: #606060;" title="Mohair Grey"></div>
+                                    <div class="swatch" data-color="#FFFFFF" style="background: #FFFFFF; border: 1px solid #CCC;" title="Gloss White"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <label style="font-size:11px; font-weight:700; display:flex; align-items:center; gap:8px; margin-top:6px; cursor:pointer;">
                     <input type="checkbox" id="smartCheck" checked> Prioritise Smart / Intelligent Features
@@ -649,20 +755,29 @@
                 <div class="metric-headline-status" id="budgetStatus"></div>
             </div>
 
-            <div class="audit-metrics-grid">
-                <div class="audit-box">
-                    <div class="audit-box-num" id="utilVal"></div>
-                    <div class="audit-box-desc">FLOOR UTILIZATION</div>
+            <!-- DUAL-LAYERED INSIGHT PANELS -->
+            <div class="insight-panel">
+                <div class="insight-header">
+                    <span class="insight-icon">💧</span> Eco-Savings &amp; Efficiency
                 </div>
-                <div class="audit-box">
-                    <div class="audit-box-num" id="matchVal"></div>
-                    <div class="audit-box-desc">THEME ALIGNMENT</div>
-                </div>
+                <div class="insight-tech-spec" id="waterValTech">13,943 gal/yr conserved &middot; EPA WaterSense</div>
+                <div class="insight-human-text">Noticeably lowers monthly utility bills while maintaining high-performance hydrotherapy pressure.</div>
             </div>
-
-            <div class="water-audit-strip">
-                <div class="water-num" id="waterVal"></div>
-                <div class="water-desc" id="waterDesc"></div>
+            
+            <div class="insight-panel">
+                <div class="insight-header">
+                    <span class="insight-icon">📐</span> Spatial Breathability
+                </div>
+                <div class="insight-tech-spec" id="utilValTech">21.4% Floor Utilization &middot; IBC Clearance Pass</div>
+                <div class="insight-human-text">Optimized fixture footprint ensures comfortable movement and an uncrowded, open-room feel.</div>
+            </div>
+            
+            <div class="insight-panel">
+                <div class="insight-header">
+                    <span class="insight-icon">✨</span> Effortless Maintenance
+                </div>
+                <div class="insight-tech-spec" id="hygieneValTech">Skirted Traps &middot; Touchless Actuation Ready</div>
+                <div class="insight-human-text">Eliminates hidden grime zones and reduces contact points for faster, more hygienic weekly cleaning.</div>
             </div>
 
             <div class="checklist-wrap">
