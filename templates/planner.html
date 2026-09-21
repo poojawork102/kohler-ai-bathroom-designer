@@ -2,7 +2,14 @@
 
 {% block title %}Plumbline{% endblock %}
 
-{% block content %}
+{% block head %}
+<script>
+    if (performance.getEntriesByType("navigation").length > 0 && performance.getEntriesByType("navigation")[0].type === "reload") {
+        window.location.href = '/';
+    } else if (performance.navigation && performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+        window.location.href = '/';
+    }
+</script>
 <style>
   /* Global Studio Reset */
   body, html {
@@ -325,8 +332,16 @@
   /* Mobile / Tablet Responsive Fallback */
   @media (max-width: 1180px) {
     .studio-main-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr !important;
     }
+    .studio-viewport {
+      padding: 16px !important;
+    }
+  }
+  @media (max-width: 480px) {
+    .bom-table { display: block; overflow-x: auto; }
+    .studio-title-group h1 { font-size: 28px !important; }
+    .cad-canvas-box { min-height: 350px !important; height: 350px !important; }
   }
   /* ============================================================
      1. LAYOUT PROPORTIONS & GRID ALIGNMENT
@@ -617,6 +632,43 @@
       line-height: 1.5;
       color: #555555;
   }
+
+  /* ============================================================
+     PRINT STYLESHEET (PDF SPEC)
+     ============================================================ */
+  @media print {
+      body {
+          background-color: #FFFFFF !important;
+      }
+      .studio-top-bar, .studio-top-actions, .swatch-group, .btn-submit-plan, .preset-pills-wrap {
+          display: none !important;
+      }
+      .studio-main-grid {
+          display: block !important;
+      }
+      .panel-surface, .cad-viewport-panel {
+          border: none !important;
+          padding: 0 !important;
+          margin-bottom: 20px !important;
+          page-break-inside: avoid;
+      }
+      /* Hide the left controls panel entirely */
+      .studio-main-grid > .panel-surface:first-child {
+          display: none !important;
+      }
+      /* Expand CAD Viewport */
+      .cad-canvas-box {
+          border: 1px solid #E8E6DF !important;
+          background: #FFFFFF !important;
+      }
+      /* Hide reasoning logs on print, keep CAD and Metrics */
+      #aiReasoningLog { display: none !important; }
+      .bom-schedule-panel {
+          border: none !important;
+          padding: 0 !important;
+          margin-top: 30px !important;
+      }
+  }
 </style>
 
 <div class="studio-viewport" id="app" data-currency="{{ currency }}">
@@ -737,6 +789,19 @@
                 <svg id="floorplanSvg" width="100%" height="480" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
                     <!-- Dynamic architectural SVG content drawn by planner.js -->
                 </svg>
+                <!-- Pipeline Loading Overlay -->
+                <div id="pipelineOverlay" style="display: none; position: absolute; inset: 0; background: rgba(250, 249, 245, 0.95); z-index: 10; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                    <div style="font-family: 'Playfair Display', Georgia, serif; font-size: 20px; font-weight: 400; color: #111111; margin-bottom: 24px; letter-spacing: 1px;">GENERATING DESIGN...</div>
+                    <div id="pipelineStages" style="text-align: left; font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600; color: #DCD8CF; line-height: 2.2; letter-spacing: 1.5px;">
+                        <div id="stage-1">01 UNDERSTAND</div>
+                        <div id="stage-2">02 SELECT</div>
+                        <div id="stage-3">03 ARRANGE</div>
+                        <div id="stage-4">04 VERIFY</div>
+                        <div id="stage-5">05 REPAIR</div>
+                        <div id="stage-6">06 FALL BACK</div>
+                        <div id="stage-7">07 NARRATE</div>
+                    </div>
+                </div>
             </div>
             <div class="legend" style="margin-top: 16px; font-size: 11px; font-family: 'Montserrat', sans-serif; color: #7A7870; display: flex; gap: 16px; justify-content: center;">
               <span class="lg-fixture">Fixture</span>
@@ -803,7 +868,7 @@
 
     </div>
     
-    <div id="banner" class="banner" role="alert" hidden style="margin-bottom: 30px; padding: 16px 20px; background: #FFF4F4; border: 1px solid #FFD6D6; color: #D32F2F;"></div>
+    <div id="banner" class="banner" role="alert" hidden style="margin-bottom: 24px; padding: 20px; background: #FAF9F5; border: 1px solid #D32F2F; border-left: 4px solid #D32F2F; color: #111111; font-family: 'Montserrat', sans-serif; font-size: 13px; line-height: 1.5;"></div>
 
     <!-- Bottom: Bill of Materials Schedule (Spans Full Width) -->
     <div class="bom-schedule-panel">

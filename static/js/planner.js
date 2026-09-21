@@ -35,6 +35,38 @@
     const mine = ++seq;
     $("workspace").classList.add("loading");
     $("generateBtn").disabled = true;
+    
+    // Setup Pipeline Animation
+    const overlay = $("pipelineOverlay");
+    let currentStage = 1;
+    let stageTimer;
+    if (overlay) {
+        overlay.style.display = "flex";
+        for(let i=1; i<=7; i++) {
+            let el = $("stage-" + i);
+            if(el) {
+                el.style.color = "#DCD8CF";
+                el.style.fontWeight = "600";
+            }
+        }
+        stageTimer = setInterval(() => {
+            if (currentStage <= 7) {
+                let el = $("stage-" + currentStage);
+                if(el) {
+                    el.style.color = "#111111";
+                    el.style.fontWeight = "900";
+                }
+                if (currentStage > 1) {
+                    let prev = $("stage-" + (currentStage - 1));
+                    if(prev) {
+                        prev.style.color = "#B89758"; // gold for completed
+                    }
+                }
+                currentStage++;
+            }
+        }, 500); // cycle through 7 stages in about 3.5 seconds
+    }
+
     try {
       const res = await fetch("/api/design", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
@@ -48,6 +80,8 @@
       return null;
     } finally {
       if (mine === seq) {
+        if (stageTimer) clearInterval(stageTimer);
+        if (overlay) overlay.style.display = "none";
         $("workspace").classList.remove("loading");
         $("generateBtn").disabled = false;
       }
@@ -118,9 +152,13 @@
     } else {
       const alt = data.alternative;
       const extra = alt
-        ? `<div class="alt">Closest valid option shown below: ${esc(money(alt.total_cost, cur))} (${esc(money(alt.over_budget_by, cur))} over your budget).</div>`
+        ? `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #EAE6DC; font-size: 13px; color: #4A4A45;">
+             <strong>Fallback Option Displayed:</strong> We rendered the nearest feasible layout. 
+             It costs <strong>${esc(money(alt.total_cost, cur))}</strong> 
+             (<span style="color: #D32F2F; font-weight: bold;">+${esc(money(alt.over_budget_by, cur))} over budget</span>).
+           </div>`
         : "";
-      showBanner("No valid bundle for this brief", data.message, extra);
+      showBanner("Constraint Violation Detected", data.message, extra);
       $("costVal").textContent = "--";
       $("budgetStatus").textContent = "⚠ No Valid Bundle";
       $("budgetStatus").style.color = "#D32F2F";
@@ -184,9 +222,15 @@
       html += `<strong>INTENT PARSER:</strong> ${ai.intent_source === 'gemini' ? 'Gemini AI' : 'Regex Fallback'}<br>`;
       html += `<strong>UNDERSTOOD:</strong> ${esc(ai.reading || 'None')}<br>`;
       
-      // If we have a rationale, show it too
       if (typeof lastData !== 'undefined' && lastData && lastData.rationale && lastData.rationale.why_this_works) {
           html += `<div style="margin-top: 8px; font-style: italic; color: #4A4A45;">"${esc(lastData.rationale.why_this_works)}"</div>`;
+      }
+      
+      if (ai.repairs !== undefined) {
+          html += `<div style="margin-top: 12px; padding: 10px; background-color: #F8F9FA; border-left: 3px solid #2F6B4F; font-size: 11px; font-weight: 700; color: #141412;">
+              <span style="color: #2F6B4F; margin-right: 6px; font-size: 14px; vertical-align: middle;">✓</span>
+              <span style="vertical-align: middle;">${ai.repairs} invalid layout(s) caught before specification</span>
+          </div>`;
       }
       html += `</div>`;
 
@@ -289,11 +333,11 @@
 
     const clear = floor.map((p) => {
         if (!p.clearance) return "";
-        const cw = p.clearance.w * 0.85;
-        const cd = p.clearance.d * 0.85;
-        const cx = p.clearance.x + (p.clearance.w * 0.075);
-        const cy = p.clearance.y + (p.clearance.d * 0.075);
-        return `<rect class="fp-clear" x="${cx}" y="${cy}" width="${cw}" height="${cd}" style="stroke-dasharray: 5,5 !important;"/>`;
+        const cx = p.clearance.x, cy = p.clearance.y, cw = p.clearance.w, cd = p.clearance.d;
+        return `<g>
+                  <rect x="${cx}" y="${cy}" width="${cw}" height="${cd}" fill="rgba(184, 151, 88, 0.15)" stroke="rgba(184, 151, 88, 0.4)" stroke-width="1" stroke-dasharray="3,3"/>
+                  <text x="${cx + 2}" y="${cy + cd - 4}" fill="#8C8A82" font-size="${fs * 0.4}" font-family="'Montserrat', sans-serif" font-weight="bold">CLEARANCE</text>
+                </g>`;
     }).join("");
 
     const fixtures = floor.map((p) => {
@@ -359,8 +403,17 @@
       <path class="fp-door" d="M 0 ${L} A ${DOOR} ${DOOR} 0 0 1 ${DOOR} ${L - DOOR}"/>
       <line class="fp-leaf" x1="${DOOR}" y1="${L}" x2="${DOOR}" y2="${L - DOOR}"/>`;
 
+    const legend = `
+      <g transform="translate(10, ${L + 15})">
+        <rect x="0" y="0" width="8" height="8" fill="rgba(184, 151, 88, 0.15)" stroke="rgba(184, 151, 88, 0.4)" stroke-width="1" stroke-dasharray="2,2"/>
+        <text x="12" y="7" fill="#8C8A82" font-size="${fs * 0.45}" font-weight="bold">REQUIRED CLEARANCE</text>
+        <path d="M 90 8 A 8 8 0 0 1 98 0" fill="none" stroke="rgba(184, 151, 88, 0.8)" stroke-width="1" stroke-dasharray="2,2"/>
+        <text x="102" y="7" fill="#8C8A82" font-size="${fs * 0.45}" font-weight="bold">DOOR SWING ARC</text>
+      </g>
+    `;
+
     svg.innerHTML = `<g class="fp-grid">${grid}</g>${clear}
-      ${door}${fixtures}${faucetShapes}${labels}${dims}
+      ${door}${fixtures}${faucetShapes}${labels}${dims}${legend}
       <rect class="fp-wall" x="0" y="0" width="${W}" height="${L}" fill="none" style="stroke-width: 4px !important; pointer-events: none;" />`;
       
     // Save the entire SVG to memory for the Sustainability page injection hack
@@ -424,9 +477,14 @@
         });
     });
     
-    // Check if we have a saved design in localStorage before auto-generating
     const savedData = localStorage.getItem('saved_plumbline_data');
-    if (savedData) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const briefParam = urlParams.get('brief');
+
+    if (briefParam) {
+        $("promptInput").value = briefParam;
+        fromPrompt();
+    } else if (savedData) {
         try {
             const parsedData = JSON.parse(savedData);
             $("promptInput").value = parsedData.intent_source === 'gemini' 

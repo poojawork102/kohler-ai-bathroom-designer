@@ -32,8 +32,11 @@ never hard-fail in front of an evaluator.
 import json
 import os
 import time
+import concurrent.futures
 
 from layout import _to_room, place_fixtures, verify_layout
+
+_CACHE = {}
 
 MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 REPAIR_ATTEMPTS = 2          # LLM proposals after the first (total tries = 3)
@@ -67,8 +70,8 @@ def ai_status():
     return "live" if get_client() else "offline"
 
 
-def _generate(prompt, system=None, temperature=0.4, as_json=True):
-    """One Gemini call. Returns parsed JSON / text, or None on any failure."""
+def _generate_raw(prompt, system=None, temperature=0.4, as_json=True):
+    """One Gemini call."""
     client = get_client()
     if client is None:
         return None
@@ -90,6 +93,17 @@ def _generate(prompt, system=None, temperature=0.4, as_json=True):
     except Exception as exc:                      # noqa: BLE001 - demo safety
         print(f"[ai_engine] LLM call failed: {exc}")
         return None
+
+
+def _generate(prompt, system=None, temperature=0.4, as_json=True, timeout=12.0):
+    """Wrapper with strict request timeout."""
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(_generate_raw, prompt, system, temperature, as_json)
+        try:
+            return future.result(timeout=timeout)
+        except concurrent.futures.TimeoutError:
+            print("[ai_engine] LLM call timed out")
+            return None
 
 
 # ------------------------------------------------------- 1. understand -----
@@ -266,6 +280,9 @@ def arrange_with_repair(fixtures, W, L, theme, brief, door_in=30.0):
     trace, critique = [], ""
     spec = "\n".join(_fx_spec(f) for f in fixtures)
     guidance = GUIDANCE.get(theme, GUIDANCE["Minimalist Modern"])
+    
+    cumulative_ms = 0
+    MAX_TOTAL_LATENCY_MS = 15000
 
     for attempt in range(1 + REPAIR_ATTEMPTS):
         started = time.perf_counter()
@@ -275,11 +292,19 @@ def arrange_with_repair(fixtures, W, L, theme, brief, door_in=30.0):
         data = _generate(prompt, system=ARRANGE_SYSTEM,
                          temperature=0.2 if attempt else 0.6)
         elapsed = round((time.perf_counter() - started) * 1000, 1)
+        cumulative_ms += elapsed
 
         if not isinstance(data, dict):
             trace.append({"attempt": attempt + 1, "source": "gemini",
                           "accepted": False, "ms": elapsed,
-                          "problems": ["model did not return usable JSON"],
+                          "problems": ["model did not return usable JSON or timed out"],
+                          "arrangement": None, "reasoning": None})
+            break
+            
+        if cumulative_ms > MAX_TOTAL_LATENCY_MS:
+            trace.append({"attempt": attempt + 1, "source": "gemini",
+                          "accepted": False, "ms": elapsed,
+                          "problems": [f"LLM latency cap exceeded ({cumulative_ms}ms > {MAX_TOTAL_LATENCY_MS}ms)"],
                           "arrangement": None, "reasoning": None})
             break
 
@@ -314,8 +339,14 @@ def arrange_with_repair(fixtures, W, L, theme, brief, door_in=30.0):
 
 def layout_with_fallback(fixtures, W, L, theme, brief):
     """Always returns a verified layout: LLM if it passes, code if it doesn't."""
+    cache_key = (W, L, theme, tuple((f["category"], f["width"], f["depth"], f["side_min"], f["front_min"]) for f in fixtures))
+    if cache_key in _CACHE:
+        trace = [{"attempt": 1, "source": "cache", "accepted": True, "ms": 0, "problems": [], "arrangement": None, "reasoning": "Loaded verified layout from cache."}]
+        return [dict(p) for p in _CACHE[cache_key]], trace, "cache"
+
     placements, trace = arrange_with_repair(fixtures, W, L, theme, brief)
     if placements:
+        _CACHE[cache_key] = [dict(p) for p in placements]
         return placements, trace, "gemini"
 
     started = time.perf_counter()

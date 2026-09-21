@@ -137,3 +137,14 @@ tests/             22 unit tests incl. a stubbed-model AI loop test
 - Water savings use published flow ratings and modelled usage, not metered data.
 - Project history is session-scoped; no database or multi-user auth yet.
 - One door position (bottom-left) and rectangular rooms only.
+
+## How this aligns with a manufacturer's business
+
+| Commitment | What it demands of a design tool | How Plumbline delivers it |
+|---|---|---|
+| Design excellence | Theme fit and spatial quality as first-class objectives, not just lowest compliant cost | Theme-weighted ranking in `solver._rank_key`; per-theme arrangement guidance in the LLM prompt |
+| Water conservation | Efficiency as a hard constraint, not a badge | Per-product WaterSense check (toilet ≤1.28 gpf, shower ≤2.0 gpm, faucet ≤1.5 gpm); modelled annual savings against a legacy baseline |
+| Operational efficiency | Fewer rework cycles, faster time-to-specify, quote-ready output | Non-compliant layouts are caught at specification time by the verifier, not on site by an installer — every rejected attempt in the trace is a rework cycle that never happened |
+| Manufacturer, not software company | Output must be specifiable through a real showroom/dealer channel | `/api/design` returns SKUs, prices, flow ratings and a verified plan in one payload |
+
+Plumbline was built to advance widely recognized public commitments, such as achieving a net zero environmental impact by 2035, accelerating water-saving product development, and supporting EPA WaterSense certification standards. This project serves as an independent technical demonstration and does not claim any official partnership, endorsement, or inside knowledge of internal manufacturer operations.

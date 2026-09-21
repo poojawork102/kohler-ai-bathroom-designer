@@ -19,6 +19,8 @@ The app starts and serves a valid design with no API key and no network.
 """
 import os
 import time
+import json
+import logging
 
 from dotenv import load_dotenv
 from flask import (Flask, jsonify, redirect, render_template, request, session,
@@ -36,6 +38,11 @@ app.secret_key = os.environ.get("FLASK_SECRET", "plumbline-spatial-secret-key")
 
 NAV = [("Planner", "planner"), ("Sustainability", "sustainability")]
 THEMES = ["Minimalist Modern", "Japanese Zen", "Classic Luxury"]
+
+# Basic logging config
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
+# Global config
 LIMITS = {"length_ft": (4, 30), "width_ft": (4, 30), "household": (1, 12)}
 
 # EPA WaterSense maximums -- the spec KOHLER certifies its products against.
@@ -249,8 +256,18 @@ def generate_design():
         result["annual_water_savings_gal"] = result["metrics"]["water"]["saved_gal"]
         result["budget_compliant"] = True
 
+    elapsed_ms = round((time.perf_counter() - started) * 1000, 1)
+    
+    # Structured log per request
+    logging.info(
+        f"DesignRequest | intent_source={parsed.get('source', 'unknown')} | "
+        f"layout_source={result.get('ai', {}).get('layout_source', 'none')} | "
+        f"attempt_count={result.get('ai', {}).get('attempts', 0)} | "
+        f"total_latency_ms={elapsed_ms}"
+    )
+
     return jsonify({"status": "success", "parsed": parsed, "data": result,
-                    "elapsed_ms": round((time.perf_counter() - started) * 1000, 1)})
+                    "elapsed_ms": elapsed_ms})
 
 
 if __name__ == "__main__":

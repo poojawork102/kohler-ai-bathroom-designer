@@ -231,22 +231,22 @@
   .step-row {
     display: flex;
     gap: 20px;
-    padding: 18px 0;
+    padding: 12px 0;
     border-bottom: 1px solid #EAE6DC;
   }
   .step-index {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 900;
     color: #B89758;
   }
   .step-info h4 {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 800;
-    letter-spacing: 2px;
-    margin: 0 0 6px 0;
+    letter-spacing: 1.5px;
+    margin: 0 0 4px 0;
   }
   .step-info p {
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1.65;
     color: #4A4A45;
     margin: 0;
@@ -524,6 +524,16 @@
       background-position: center;
     }
   }
+  @media (max-width: 480px) {
+    .hero-title { font-size: 32px; }
+    .hero-btn-row { flex-direction: column; gap: 12px; }
+    .hero-btn-row a { width: 100%; text-align: center; }
+    .prompt-pill-list { flex-direction: column; width: 100%; }
+    .prompt-pill { text-align: center; font-size: 11px; padding: 10px 12px; white-space: normal; }
+    .section { padding: 40px 20px; }
+    .specs-title { font-size: 28px; }
+    .blueprint-card { padding: 10px; }
+  }
 </style>
 
 <!-- HERO SECTION: FULL WIDTH FOR PHONES & DESKTOPS -->
@@ -629,29 +639,50 @@
             <div class="step-row">
                 <span class="step-index">01</span>
                 <div class="step-info">
-                    <h4>BATHROOM INTENT EXTRACTION</h4>
-                    <p>Parses room dimensions, budget limits, and styling choices directly from natural language prompts.</p>
+                    <h4>UNDERSTAND</h4>
+                    <p>Parses free text into a structured brief (dimensions, budget, theme). Regex is the offline fallback.</p>
                 </div>
             </div>
             <div class="step-row">
                 <span class="step-index">02</span>
                 <div class="step-info">
-                    <h4>MULTI-FIXTURE BUNDLE SOLVER</h4>
-                    <p>Optimizes product bundles against the 16-item product catalogue to guarantee zero budget overruns.</p>
+                    <h4>SELECT</h4>
+                    <p>Enumerates all catalogue bundles, filtering securely by budget and physical floor-area constraints.</p>
                 </div>
             </div>
             <div class="step-row">
                 <span class="step-index">03</span>
                 <div class="step-info">
-                    <h4>CLEARANCE &amp; PLUMBING VALIDATION</h4>
-                    <p>Enforces 15" side clearances for water closets, 21" front vanity clearances, and collision-free door arcs.</p>
+                    <h4>ARRANGE</h4>
+                    <p>Generative AI proposes a layout in a constrained (wall, offset-along-wall) space to prevent out-of-bounds geometry.</p>
                 </div>
             </div>
             <div class="step-row">
                 <span class="step-index">04</span>
                 <div class="step-info">
-                    <h4>COST &amp; WATER SAVINGS REPORT</h4>
-                    <p>Produces true-to-scale SVG drafts, live INR cost breakdowns, and annual water stewardship metrics.</p>
+                    <h4>VERIFY</h4>
+                    <p>Deterministic layout engine independently re-checks exact clearances, door swings, and physical overlaps.</p>
+                </div>
+            </div>
+            <div class="step-row">
+                <span class="step-index">05</span>
+                <div class="step-info">
+                    <h4>REPAIR</h4>
+                    <p>Violations from the verifier are fed back as a critique. The model automatically retries the arrangement.</p>
+                </div>
+            </div>
+            <div class="step-row">
+                <span class="step-index">06</span>
+                <div class="step-info">
+                    <h4>FALL BACK</h4>
+                    <p>If the model still fails, a brute-force constraint search ensures a guaranteed-valid layout is shipped.</p>
+                </div>
+            </div>
+            <div class="step-row">
+                <span class="step-index">07</span>
+                <div class="step-info">
+                    <h4>NARRATE</h4>
+                    <p>Generates design rationale grounded exclusively on the mathematically verified spatial numbers.</p>
                 </div>
             </div>
         </div>
