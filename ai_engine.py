@@ -38,7 +38,7 @@ from layout import _to_room, place_fixtures, verify_layout
 
 _CACHE = {}
 
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
 REPAIR_ATTEMPTS = 2          # LLM proposals after the first (total tries = 3)
 LLM_TIMEOUT_NOTE = "deterministic fallback"
 
@@ -108,7 +108,7 @@ def _generate(prompt, system=None, temperature=0.4, as_json=True, timeout=12.0):
 
 # ------------------------------------------------------- 1. understand -----
 INTENT_SYSTEM = (
-    "You are the intake specialist for KOHLER's AI Bathroom Designer. You "
+    "You are the intake specialist for a bathroom design assistant. You "
     "convert a homeowner's plain-English request into a structured design "
     "brief. You never invent numbers the user did not imply; anything you "
     "assume must be listed in 'assumed'."
@@ -180,7 +180,7 @@ def parse_intent(text, regex_fallback):
 WALLS = ("top", "right", "bottom", "left")
 
 ARRANGE_SYSTEM = (
-    "You are a KOHLER spatial designer. You arrange bathroom fixtures against "
+    "You are a spatial design assistant. You arrange bathroom fixtures against "
     "walls. You return only JSON. You treat the reviewer's violation list as "
     "ground truth and you never repeat an arrangement that was rejected."
 )
@@ -363,7 +363,7 @@ def layout_with_fallback(fixtures, W, L, theme, brief):
 
 # ---------------------------------------------------------- 7. narrate -----
 RATIONALE_SYSTEM = (
-    "You are a KOHLER design consultant writing for a homeowner. KOHLER's "
+    "You are a bathroom design consultant writing for a homeowner. Good bathroom design's "
     "mission is to help people live gracious, healthy and sustainable lives. "
     "You explain a finished design warmly and plainly. You use ONLY the "
     "numbers given to you -- you never estimate, round differently, or invent "
@@ -375,7 +375,7 @@ RATIONALE_PROMPT = """Write the design rationale for this verified plan.
 Client wanted: {brief}
 Theme: {theme} | Room: {length} x {width} ft | Household: {household}
 
-Selected KOHLER products:
+Selected products:
 {products}
 
 Verified numbers (use these exactly, do not alter them):

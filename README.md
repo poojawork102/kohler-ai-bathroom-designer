@@ -8,8 +8,9 @@ code-compliant, WaterSense-certified floor plan — with the AI's own reasoning
 shown and independently verified.
 
 **Video walkthrough:** https://youtu.be/OoWaedDzoKU
-**Prompts documentation:** `Prompts_Documentation.pdf`
-**Pitch deck:** `Plumbline_Deck.pdf`
+**Prompts documentation:** [docs/Prompts.md](docs/Prompts.md)
+**Pitch deck:** [Plumbline_Deck.pdf](Plumbline_Deck.pdf)
+**Product Requirements:** [docs/PRD.md](docs/PRD.md)
 
 ---
 
@@ -105,7 +106,7 @@ ai_engine.py       Gemini calls, constrained generation, verify→repair loop
 solver.py          Deterministic bundle selection (budget, water, theme)
 layout.py          Geometry, clearance envelopes, independent verifier
 intent_parser.py   Regex intent parser (offline fallback)
-catalog.json       16 KOHLER products with real SKUs, flow rates, clearances
+catalog.json       16 products with real SKUs, flow rates, clearances
 templates/         Planner, sustainability dashboard, landing page
 tests/             22 unit tests incl. a stubbed-model AI loop test
 ```

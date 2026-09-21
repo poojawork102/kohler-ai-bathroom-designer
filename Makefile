@@ -7,4 +7,4 @@ run:
 	python app.py
 
 test:
-	python -m pytest tests/ -q
+	pytest
