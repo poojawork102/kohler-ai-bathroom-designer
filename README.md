@@ -9,7 +9,7 @@ shown and independently verified.
 
 **Video walkthrough:** https://youtu.be/OoWaedDzoKU
 **Prompts documentation:** `Prompts_Documentation.pdf`
-**Pitch deck:** `Kohler_Deck.pdf`
+**Pitch deck:** `Plumbline_Deck.pdf`
 
 ---
 

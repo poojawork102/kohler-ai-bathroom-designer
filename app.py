@@ -110,6 +110,21 @@ def health():
                     "model": ai_engine.MODEL, "catalog": len(load_catalog())})
 
 
+@app.route("/api/health", methods=["GET"])
+def health_check():
+    import os
+    import json
+    with open("catalog.json", "r") as f:
+        catalog = json.load(f)
+    api_key = os.getenv("GEMINI_API_KEY")
+    model = os.getenv("GEMINI_MODEL")
+    return jsonify({
+        "status": "ok",
+        "gemini": "live" if api_key else "offline",
+        "model": model,
+        "catalog": len(catalog)
+    })
+
 @app.route("/api/projects/save", methods=["POST"])
 def save_project():
     data = request.get_json(silent=True)
