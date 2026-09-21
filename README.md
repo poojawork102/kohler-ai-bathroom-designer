@@ -4,11 +4,13 @@
 AI Lab Case Study — Track 1: AI Bathroom Designer & Planner | MIT-WPU
 
 ---
-
-**Video walkthrough:** https://youtu.be/OoWaedDzoKU
 **Prompts documentation:** [`docs/Plumbline_promptlog.pdf`](docs/Plumbline_promptlog.pdf)
+
 **Pitch deck:** [`docs/Plumbline_ppt.pdf`](docs/Plumbline_ppt.pdf)
+
 **Product requirements:** [`docs/Plumbline_prd.pdf`](docs/Plumbline_prd.pdf)
+
+**Prototype walkthrough:**https://youtu.be/HDnUypq6zeM
 
 ---
 
