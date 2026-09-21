@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}KOHLER Spatial Studio & Planner{% endblock %}
+{% block title %}Plumbline{% endblock %}
 
 {% block content %}
 <style>
@@ -624,7 +624,7 @@
     <!-- Top Header Strip -->
     <div class="studio-top-bar">
         <div class="studio-title-group">
-            <span>KOHLER SPATIAL ARCHITECTURE STUDIO</span>
+            <span>Plumbline</span>
             <h1>Spatial Bathroom Planner &amp; Engine</h1>
         </div>
         <div class="studio-top-actions">
@@ -679,7 +679,7 @@
 
                         <!-- CURATED FIXTURE FINISHES -->
                         <div class="custom-colors-section" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #E8E6DF;">
-                            <label style="font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #111;">CURATED KOHLER FINISHES</label>
+                            <label style="font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #111;">AVAILABLE FINISHES</label>
                             
                             <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
                                 
@@ -743,6 +743,15 @@
               <span class="lg-clear">Required clearance</span>
               <span class="lg-door">Door swing</span>
             </div>
+            
+            <!-- AI REASONING PANEL -->
+            <div class="panel-header" style="margin-top: 20px; border-top: 1px solid #E8E6DF; padding-top: 15px;">
+                <span>AI REASONING &amp; TRACE</span>
+                <span class="cad-hud-speed" id="aiStatusBadge" style="background: #111111; color: #FFFFFF; font-size: 9px; padding: 4px 8px; border-radius: 4px;">IDLE</span>
+            </div>
+            <div id="aiReasoningLog" style="flex-grow: 1; overflow-y: auto; font-size: 12px; line-height: 1.6; color: #4A4A45; background: #FAF9F5; border: 1px solid #E8E6DF; padding: 12px; margin-top: 10px; max-height: 200px;">
+                <i>Ready for design intent...</i>
+            </div>
         </div>
 
         <!-- Right: Executive Spec & Code Audit -->
@@ -770,7 +779,7 @@
                 <div class="insight-header">
                     <span class="insight-icon">📐</span> Spatial Breathability
                 </div>
-                <div class="insight-tech-spec" id="utilValTech">21.4% Floor Utilization &middot; IBC Clearance Pass</div>
+                <div class="insight-tech-spec" id="utilValTech">21.4% Floor Utilization &middot; Clearance verification</div>
                 <div class="insight-human-text">Optimized fixture footprint ensures comfortable movement and an uncrowded, open-room feel.</div>
             </div>
             
@@ -784,7 +793,7 @@
 
             <div class="checklist-wrap">
                 <div class="panel-header" style="border:none; padding:0; margin-bottom:10px;">
-                    <span>IBC 2026 CODE VERIFICATION</span>
+                    <span>Clearance verification</span>
                 </div>
                 <div id="checks">
                     <!-- Javascript populates check rows here -->
@@ -800,7 +809,7 @@
     <div class="bom-schedule-panel">
         <div class="panel-header" style="font-size:13px; margin-bottom:0; display: flex; justify-content: space-between;">
             <span id="bomTitle">04 &middot; ARCHITECTURAL BILL OF MATERIALS &amp; FIXTURE SCHEDULE</span>
-            <span>OFFICIAL KOHLER INDIA SPECIFICATION</span>
+            <span>FIXTURE SCHEDULE</span>
         </div>
 
         <table class="bom-table" id="itemsTable">
@@ -823,5 +832,5 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/planner.js') }}"></script>
+<script src="{{ url_for('static', filename='js/planner.js') }}?v=3.0"></script>
 {% endblock %}

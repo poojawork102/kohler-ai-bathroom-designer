@@ -1,0 +1,2 @@
+# Notice
+This repository is an independent student case-study prototype, is not affiliated with or endorsed by any manufacturer, and product data is a representative sample compiled from public specifications for demonstration purposes.

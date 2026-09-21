@@ -10,7 +10,7 @@ Returned dict
 """
 import re
 
-DEFAULTS = {"length_ft": 10.0, "width_ft": 8.0, "budget": 10000.0,
+DEFAULTS = {"length_ft": 10.0, "width_ft": 8.0, "budget": 600000.0,
             "theme": "Minimalist Modern", "household": 2}
 
 # Longest phrases first so "minimalist modern" wins over "modern".
@@ -31,6 +31,10 @@ _BUDGET_PATTERNS = [
     re.compile(r"(?:₹|\brs\.?|\binr\b|\$|\busd\b)\s*" + _NUM + _MULT, re.I),
     re.compile(r"\bbudget\b\s*(?:of|is|:|around|about)?\s*(?:₹|rs\.?|inr|\$|usd)?\s*" + _NUM + _MULT, re.I),
     re.compile(_NUM + _MULT + r"\s*(?:rs|inr|usd|rupees|dollars)?\s*budget\b", re.I),
+    # Bare magnitude with no currency word: "6 lakh", "6L", "50k", "1.2 cr".
+    # The multiplier is REQUIRED here so plain counts ("4 people", "8x10") and
+    # dimensions can never be misread as a budget.
+    re.compile(_NUM + r"\s?(lakhs|lakh|lac|crore|cr|k|l)\b", re.I),
 ]
 _HOUSEHOLD = [
     re.compile(r"\b(?:family|household|home)\s+of\s+(\d+)\b", re.I),

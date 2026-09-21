@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Eco-Metrics & Water Stewardship | KOHLER{% endblock %}
+{% block title %}Eco-Metrics & Water Stewardship | Plumbline{% endblock %}
 
 {% block head %}
 <style>
@@ -106,7 +106,7 @@
             <!-- MINIMAL AI PREDICTION CARD -->
             <div style="border-left: 3px solid #2C5234; padding: 15px 20px; background: #FFFFFF; box-shadow: 0 2px 10px rgba(0,0,0,0.02); margin-bottom: 25px;">
                 <div style="font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 700; color: #888; letter-spacing: 1px; text-transform: uppercase;">AI Spatial Routing Engine</div>
-                <div style="font-family: 'Playfair Display', serif; font-size: 18px; color: #111; margin-top: 5px;">Optimized Tier: <strong>{{ ai_recommendation }}</strong></div>
+                <div style="font-family: 'Playfair Display', serif; font-size: 18px; color: #111; margin-top: 5px;">Optimized Tier: <strong id="sust-tier">{{ ai_recommendation }}</strong></div>
             </div>
     
             <div style="display: flex; gap: 30px;">
@@ -121,7 +121,7 @@
                         <div id="injected-canvas-container" style="width: 100%; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center;"></div>
                         <script>
                             window.addEventListener('DOMContentLoaded', (event) => {
-                                const savedCanvas = localStorage.getItem('saved_kohler_canvas');
+                                const savedCanvas = localStorage.getItem('saved_plumbline_canvas');
                                 if (savedCanvas) {
                                     const container = document.getElementById('injected-canvas-container');
                                     container.innerHTML = savedCanvas;
@@ -158,25 +158,18 @@
                     <!-- MINIMAL HARDWARE STATUS LINE -->
                     <div style="padding: 10px 0; border-bottom: 1px solid #EAEAEA; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center;">
                         <div style="font-family: 'Montserrat', sans-serif; font-size: 11px; color: #555; letter-spacing: 0.5px;">
-                            <strong style="color: #111;">ACTIVE HARDWARE:</strong> Eco-Optimized Fixture Set based on {{ ai_recommendation }}
-                        </div>
-                        <div style="font-family: 'Montserrat', sans-serif; font-size: 10px; color: #2C5234; font-weight: 700; letter-spacing: 1px;">
-                            ✓ SPATIAL MATH VERIFIED
+                            <strong style="color: #111;">ACTIVE HARDWARE:</strong> Eco-Optimized Fixture Set based on <span id="sust-tier-inline">{{ ai_recommendation }}</span>
                         </div>
                     </div>
     
                     <div style="display: flex; justify-content: space-around; background: #FFFFFF; padding: 30px; border-radius: 12px; border: 1px solid #E8E8E8; box-shadow: 0 4px 15px rgba(0,0,0,0.02); text-align: center;">
                         <div>
-                            <h3 style="font-family: monospace; font-size: 36px; color: #2C5234; margin: 0;">{{ gallons_saved | format_number }}</h3>
+                            <h3 id="sust-gallons" style="font-family: monospace; font-size: 36px; color: #2C5234; margin: 0;">{{ gallons_saved | format_number }}</h3>
                             <p style="font-size: 10px; font-weight: 800; color: #666; letter-spacing: 1px; margin-top: 5px;">ANNUAL GALLONS SAVED</p>
                         </div>
                         <div style="border-left: 2px solid #F5F5F5; padding-left: 40px;">
-                            <h3 style="font-family: monospace; font-size: 36px; color: #2C5234; margin: 0;">43.8%</h3>
+                            <h3 id="sust-pct" style="font-family: monospace; font-size: 36px; color: #2C5234; margin: 0;">{{ water_metrics.saved_pct }}%</h3>
                             <p style="font-size: 10px; font-weight: 800; color: #666; letter-spacing: 1px; margin-top: 5px;">WATER USAGE REDUCTION</p>
-                        </div>
-                        <div style="border-left: 2px solid #F5F5F5; padding-left: 40px;">
-                            <h3 style="font-family: monospace; font-size: 36px; color: #2C5234; margin: 0;">LEED</h3>
-                            <p style="font-size: 10px; font-weight: 800; color: #666; letter-spacing: 1px; margin-top: 5px;">COMPLIANCE TARGET</p>
                         </div>
                     </div>
 
@@ -186,9 +179,9 @@
                             Model Prediction Rationale
                         </h4>
                         <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #333; line-height: 1.6;">
-                            <li><strong>Spatial Routing:</strong> Vanity positioned on the East wall to maximize central floor clearance and maintain a strict 21-inch unobstructed walkway per IBC 2026 Code 405.3.1.</li>
+                            <li><strong>Spatial Routing:</strong> Vanity positioned on the East wall to maximize central floor clearance and maintain a strict unobstructed walkway for clearance verification.</li>
                             <li><strong>Clearance Optimization:</strong> Toilet zone isolated from the shower door swing arc, actively preventing hardware collision and ensuring ADA-compliant transfer space.</li>
-                            <li><strong>Resource Baseline:</strong> The 43.8% water reduction prediction is driven specifically by substituting the baseline 2.5 GPM fixtures with Kohler's 1.2 GPM aerators and 1.28 GPF intelligent toilets.</li>
+                            <li><strong>Resource Baseline:</strong> The <span id="sust-pct-inline">{{ water_metrics.saved_pct }}</span>% water reduction prediction is driven specifically by substituting the baseline fixtures with WaterSense-certified options, such as 1.2 GPM aerators.</li>
                         </ul>
                     </div>
                 </div>
@@ -201,7 +194,7 @@
     <!-- ROI and Chart inside the wide container -->
     <div class="dashboard-container" style="margin-top: 40px; margin-bottom: 40px;">
         <div class="premium-card" style="margin: 0;">
-            <h2 class="card-title">Standard Baseline vs Kohler Eco-Smart</h2>
+            <h2 class="card-title">Legacy baseline vs WaterSense-certified selection</h2>
             <div style="position: relative; height: 300px; width: 100%;">
                 <canvas id="waterChart"></canvas>
             </div>
@@ -210,7 +203,7 @@
         <div class="premium-card" style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px;">
             <div style="width: 50%;">
                 <h3 style="font-family: 'Playfair Display', serif; margin-bottom: 10px; font-size: 22px;">Calculate Your ROI</h3>
-                <p style="font-family: 'Montserrat', sans-serif; font-size: 14px; color: #666; margin-bottom: 20px; line-height: 1.5;">Adjust your local utility rate to see your projected annual savings with Kohler Eco-Smart fixtures.</p>
+                <p style="font-family: 'Montserrat', sans-serif; font-size: 14px; color: #666; margin-bottom: 20px; line-height: 1.5;">Adjust your local utility rate to see your projected annual savings.</p>
                 <label style="font-size: 12px; font-weight: bold; letter-spacing: 1px;">LOCAL WATER COST (₹ / LITER): <span id="rateDisplay">0.05</span></label>
                 <input type="range" id="waterRate" min="0.01" max="0.15" step="0.01" value="0.05" style="width: 100%; margin-top: 15px;">
             </div>
@@ -221,69 +214,7 @@
         </div>
     </div>
 
-    <!-- Hybrid Health Cards -->
     <div class="dashboard-container" style="margin-top: 40px;">
-        <div style="display: flex; flex-direction: column; gap: 25px; margin-bottom: 80px;">
-            
-            <!-- Hybrid Dekoda Card -->
-            <div style="background: #FFFFFF; border-radius: 12px; border: 1px solid #EAEAEA; box-shadow: 0 4px 20px rgba(0,0,0,0.03); padding: 30px; display: flex; align-items: flex-start; gap: 30px; border-left: 4px solid #4A7A59;">
-                <div style="width: 50px; height: 50px; background: #E8F0EA; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0; margin-top: 5px;">
-                    <svg width="20" height="20" fill="#4A7A59" viewBox="0 0 16 16"><path d="M8 16a6 6 0 0 0 6-6c0-1.655-1.122-2.904-2.432-4.362C10.254 4.176 8.75 2.503 8 0c-.75 2.503-2.254 4.176-3.568 5.638C3.122 7.096 2 8.345 2 10a6 6 0 0 0 6 6z"/></svg>
-                </div>
-                <div style="flex-grow: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                        <h4 style="font-family: 'Playfair Display', serif; font-size: 22px; color: #111; margin: 0;">Clean, Safe Tap Water</h4>
-                        <span style="font-family: monospace; font-size: 10px; color: #666; background: #F8F9FA; border: 1px solid #E0E0E0; padding: 4px 8px; border-radius: 4px;">SOURCE: Dekoda Array | NODE: DK-77A</span>
-                    </div>
-                    <p style="font-family: 'Montserrat', sans-serif; font-size: 14px; color: #555; margin: 0 0 15px 0; line-height: 1.6;">
-                        The integrated sensors continuously monitor your water for heavy metals and VOCs, ensuring the water your family uses daily is clinically pure and safe.
-                    </p>
-                    <div style="font-family: monospace; font-size: 12px; color: #2C5234; font-weight: 600;">
-                        > pH: 7.2 | CONTAMINANTS: 0.00% | STATUS: Tracking Live
-                    </div>
-                </div>
-            </div>
-    
-            <!-- Hybrid Verdera Card -->
-            <div style="background: #FFFFFF; border-radius: 12px; border: 1px solid #EAEAEA; box-shadow: 0 4px 20px rgba(0,0,0,0.03); padding: 30px; display: flex; align-items: flex-start; gap: 30px; border-left: 4px solid #D97706;">
-                <div style="width: 50px; height: 50px; background: #FFF4E5; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0; margin-top: 5px;">
-                    <svg width="20" height="20" fill="#D97706" viewBox="0 0 16 16"><path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/></svg>
-                </div>
-                <div style="flex-grow: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                        <h4 style="font-family: 'Playfair Display', serif; font-size: 22px; color: #111; margin: 0;">Healthier Sleep Cycles</h4>
-                        <span style="font-family: monospace; font-size: 10px; color: #666; background: #F8F9FA; border: 1px solid #E0E0E0; padding: 4px 8px; border-radius: 4px;">SOURCE: Verdera Voice Mirror | NODE: VD-92B</span>
-                    </div>
-                    <p style="font-family: 'Montserrat', sans-serif; font-size: 14px; color: #555; margin: 0 0 15px 0; line-height: 1.6;">
-                        Smart lighting automatically shifts from cool daylight to warm amber tones in the evening, protecting your melatonin production and circadian rhythm.
-                    </p>
-                    <div style="font-family: monospace; font-size: 12px; color: #B45309; font-weight: 600;">
-                        > TEMP: 4000K | ROUTINE: Wake-up | NEXT SHIFT: 18:00 (Warm)
-                    </div>
-                </div>
-            </div>
-    
-            <!-- Hybrid Stillness Card -->
-            <div style="background: #FFFFFF; border-radius: 12px; border: 1px solid #EAEAEA; box-shadow: 0 4px 20px rgba(0,0,0,0.03); padding: 30px; display: flex; align-items: flex-start; gap: 30px; border-left: 4px solid #2563EB;">
-                <div style="width: 50px; height: 50px; background: #EBF3FF; border-radius: 50%; display: flex; justify-content: center; align-items: center; flex-shrink: 0; margin-top: 5px;">
-                    <svg width="20" height="20" fill="#2563EB" viewBox="0 0 16 16"><path d="M8 15c-4.418 0-8-3.134-8-7s3.582-7 8-7 8 3.134 8 7-3.582 7-8 7zM8 2.5c-3.584 0-6.5 2.469-6.5 5.5S4.416 13.5 8 13.5 14.5 11.031 14.5 8 11.584 2.5 8 2.5z"/><path d="M9.5 8.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>
-                </div>
-                <div style="flex-grow: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                        <h4 style="font-family: 'Playfair Display', serif; font-size: 22px; color: #111; margin: 0;">Deep Mental Relaxation</h4>
-                        <span style="font-family: monospace; font-size: 10px; color: #666; background: #F8F9FA; border: 1px solid #E0E0E0; padding: 4px 8px; border-radius: 4px;">SOURCE: Stillness Bath | NODE: ST-44C</span>
-                    </div>
-                    <p style="font-family: 'Montserrat', sans-serif; font-size: 14px; color: #555; margin: 0 0 15px 0; line-height: 1.6;">
-                        Targeted hydrotherapy, essential oil fog, and structural lighting actively trigger a parasympathetic response to lower stress hormones and improve recovery.
-                    </p>
-                    <div style="font-family: monospace; font-size: 12px; color: #1D4ED8; font-weight: 600;">
-                        > VAGAL TONE: +14% (HRV) | NEURAL STATE: Alpha | PROTOCOL: Deep Reset
-                    </div>
-                </div>
-            </div>
-    
-        </div>
-        
         <div style="text-align: center; margin-top: 40px; margin-bottom: 40px;">
             <button onclick="downloadMasterReport()" style="background: black; color: white; padding: 12px 24px; font-weight: bold; cursor: pointer; border: none;">
                 DOWNLOAD FULL ENTERPRISE REPORT (PDF)
@@ -299,19 +230,29 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('waterChart').getContext('2d');
-        new Chart(ctx, {
+        window.waterChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: ['Toilets', 'Showers', 'Faucets', 'Total Footprint'],
                 datasets: [
                     {
-                        label: 'Standard Baseline (Gal/yr)',
-                        data: [15000, 20000, 5000, 40000],
+                        label: 'Legacy Baseline (Gal/yr)',
+                        data: [
+                            {{ water_metrics.legacy_breakdown.toilet }},
+                            {{ water_metrics.legacy_breakdown.shower }},
+                            {{ water_metrics.legacy_breakdown.faucet }},
+                            {{ water_metrics.legacy_breakdown.total }}
+                        ],
                         backgroundColor: '#e3e3e0'
                     },
                     {
-                        label: 'Kohler Eco-Smart (Gal/yr)',
-                        data: [5000, 8000, 2500, 15500],
+                        label: 'WaterSense-certified selection (Gal/yr)',
+                        data: [
+                            {{ water_metrics.breakdown.toilet }},
+                            {{ water_metrics.breakdown.shower }},
+                            {{ water_metrics.breakdown.faucet }},
+                            {{ water_metrics.breakdown.total }}
+                        ],
                         backgroundColor: '#2f6b4f'
                     }
                 ]
@@ -333,8 +274,8 @@
     const rateDisplay = document.getElementById('rateDisplay');
     const savingsDisplay = document.getElementById('annualSavings');
     
-    // Dynamic backend calculation
-    const annualLitersSaved = {{ gallons_saved * 3.78 }}; 
+    // Dynamic backend calculation (default if no localStorage)
+    let annualLitersSaved = {{ gallons_saved * 3.78 }}; 
 
     rateSlider.addEventListener('input', (e) => {
         const rate = parseFloat(e.target.value);
@@ -343,6 +284,44 @@
         const totalSavings = Math.round(annualLitersSaved * rate);
         savingsDisplay.textContent = '₹' + totalSavings.toLocaleString('en-IN');
     });
+
+    // Check localStorage to override default templated metrics with actual generated design
+    const savedDataStr = localStorage.getItem('saved_plumbline_data');
+    if (savedDataStr) {
+        try {
+            const parsed = JSON.parse(savedDataStr);
+            if (parsed.metrics && parsed.metrics.water) {
+                const water = parsed.metrics.water;
+                document.getElementById('sust-gallons').textContent = Number(water.saved_gal).toLocaleString('en-US');
+                document.getElementById('sust-pct').textContent = water.saved_pct + '%';
+                document.getElementById('sust-pct-inline').textContent = water.saved_pct;
+                
+                // Update ROI Base
+                annualLitersSaved = water.saved_gal * 3.78;
+                const totalSavings = Math.round(annualLitersSaved * parseFloat(rateSlider.value));
+                savingsDisplay.textContent = '₹' + totalSavings.toLocaleString('en-IN');
+
+                // Update Chart
+                if (window.waterChart) {
+                    window.waterChart.data.datasets[0].data = [
+                        water.legacy_breakdown.toilet,
+                        water.legacy_breakdown.shower,
+                        water.legacy_breakdown.faucet,
+                        water.legacy_breakdown.total
+                    ];
+                    window.waterChart.data.datasets[1].data = [
+                        water.breakdown.toilet,
+                        water.breakdown.shower,
+                        water.breakdown.faucet,
+                        water.breakdown.total
+                    ];
+                    window.waterChart.update();
+                }
+            }
+        } catch (e) {
+            console.error("Failed to parse saved_plumbline_data for sustainability metrics", e);
+        }
+    }
 
     function downloadMasterReport() {
         window.print();

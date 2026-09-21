@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}My Specifications & Saved Projects | KOHLER{% endblock %}
+{% block title %}My Specifications & Saved Projects | Plumbline{% endblock %}
 
 {% block content %}
 <section class="section wrap" style="padding-top: 40px; min-height: 70vh;">
@@ -13,18 +13,7 @@
             <a href="{{ url_for('planner') }}" class="btn">GO TO STUDIO</a>
         </div>
         
-        <div class="project-card card" style="opacity: 0.6;">
-            <h3 style="font-weight: 500; font-size: 18px; margin-bottom: 8px;">8x10 Luxury Master Bath (Sample)</h3>
-            <div class="project-details" style="font-size: 13px; color: var(--ink-muted); margin-bottom: 20px; line-height: 1.8;">
-                <div><strong>Dimensions:</strong> 8 ft &times; 10 ft</div>
-                <div><strong>Total Cost:</strong> ₹6,40,000</div>
-                <div><strong>Water Savings:</strong> 24,500 gal/yr</div>
-            </div>
-            <div class="project-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button class="btn" style="padding: 8px 16px; font-size: 10px;" disabled>LOAD IN PLANNER</button>
-                <button class="btn btn-ghost" style="padding: 8px 16px; font-size: 10px;" disabled>EXPORT SPEC PDF</button>
-            </div>
-        </div>
+
         {% else %}
             {% for p in projects %}
             <div class="project-card card">

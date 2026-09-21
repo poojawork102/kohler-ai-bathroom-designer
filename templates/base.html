@@ -4,16 +4,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}KOHLER Spatial Architecture Studio{% endblock %}</title>
+  <title>{% block title %}Plumbline{% endblock %}</title>
   <meta name="description"
     content="Turns a plain-English bathroom brief into a budget-compliant, space-valid Kohler bundle with a scaled floorplan.">
-  <link rel="icon" type="image/x-icon" href="https://www.kohler.co.in/favicon.ico">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;900&family=Playfair+Display:ital,wght@0,300;0,400;1,400&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/kohler.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/plumbline.css') }}">
   {% block head %}{% endblock %}
 </head>
 
@@ -37,7 +37,7 @@
       <div class="nav-center">
         <a href="/" style="text-decoration: none; display: inline-block;">
           <span
-            style="font-family: 'Montserrat', sans-serif; font-size: 24px; font-weight: 900; letter-spacing: 8px; color: #111111;">KOHLER</span>
+            style="font-family: 'Montserrat', sans-serif; font-size: 24px; font-weight: 900; letter-spacing: 8px; color: #111111;">PLUMBLINE</span>
         </a>
       </div>
 
@@ -59,13 +59,9 @@
 
   <footer class="kohler-footer"
     style="background: #111111; color: #FFFFFF; text-align: center; padding: 35px 20px 25px 20px;">
-    <div
-      style="font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 900; letter-spacing: 8px; margin-bottom: 12px;">
-      KOHLER</div>
-
     <p
       style="font-family: 'Montserrat', sans-serif; font-size: 11px; color: #B3B3AD; margin: 0 0 6px 0; letter-spacing: 1.5px;">
-      &copy; 2026 KOHLER Co. All Rights Reserved. &middot; Kohler Spatial Architecture Studio
+      Plumbline &mdash; independent student prototype. Not affiliated with or endorsed by any manufacturer.
     </p>
 
     <p

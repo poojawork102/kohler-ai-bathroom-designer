@@ -111,8 +111,10 @@
       $("banner").hidden = true;
       view = { bundle: data.bundle, placements: data.layout.placements, total: data.metrics.total_cost, note: "" };
       renderMetrics(data);
+      if (data.ai) renderAI(data.ai);
       $("saveBtn").style.display = "block";
       lastData = data;
+      localStorage.setItem('saved_plumbline_data', JSON.stringify(data));
     } else {
       const alt = data.alternative;
       const extra = alt
@@ -151,12 +153,67 @@
     $("budgetStatus").style.color = m.budget_used_pct <= 100 ? "#2F6B4F" : "#D32F2F";
     
     $("waterValTech").textContent = `${w.saved_gal.toLocaleString("en-US")} gal/yr conserved \xB7 EPA WaterSense`;
-    $("utilValTech").textContent = `${m.space_utilization_pct}% Floor Utilization \xB7 IBC Clearance Pass`;
+    $("utilValTech").textContent = `${m.space_utilization_pct}% Floor Utilization \xB7 Clearance verification`;
     $("hygieneValTech").textContent = `Skirted Traps \xB7 Touchless Actuation Ready`;
     
     $("checks").innerHTML = data.checks.map((c) => `
       <div class="check-row"><span class="check-icon" style="color: ${c.passed ? '#2F6B4F' : '#D32F2F'};">${c.passed ? '✓' : '✗'}</span> ${esc(c.name)}: ${c.passed ? 'Pass' : 'FAIL'} <span style="font-size: 10px; color: #8C8A82; margin-left: 4px;">${esc(c.detail)}</span></div>
     `).join("");
+  }
+
+  function renderAI(ai) {
+    try {
+      if (!ai) return;
+
+      let badge = $("aiStatusBadge");
+      if (badge) {
+          if (ai.status === "live") {
+              badge.style.background = "#2F6B4F";
+              badge.textContent = "GEMINI 3.6-FLASH";
+          } else {
+              badge.style.background = "#D32F2F";
+              badge.textContent = "DETERMINISTIC FALLBACK (OFFLINE)";
+          }
+      }
+
+      let log = $("aiReasoningLog");
+      if (!log) return;
+
+      let html = "";
+      html += `<div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #E8E6DF;">`;
+      html += `<strong>INTENT PARSER:</strong> ${ai.intent_source === 'gemini' ? 'Gemini AI' : 'Regex Fallback'}<br>`;
+      html += `<strong>UNDERSTOOD:</strong> ${esc(ai.reading || 'None')}<br>`;
+      
+      // If we have a rationale, show it too
+      if (typeof lastData !== 'undefined' && lastData && lastData.rationale && lastData.rationale.why_this_works) {
+          html += `<div style="margin-top: 8px; font-style: italic; color: #4A4A45;">"${esc(lastData.rationale.why_this_works)}"</div>`;
+      }
+      html += `</div>`;
+
+      if (Array.isArray(ai.trace) && ai.trace.length > 0) {
+          ai.trace.forEach(t => {
+              if (!t) return;
+              let color = t.accepted ? "#2F6B4F" : "#D32F2F";
+              html += `<div style="margin-bottom: 12px; border-left: 2px solid ${color}; padding-left: 10px;">`;
+              html += `<strong>ATTEMPT ${t.attempt || '?'} (${t.source || 'unknown'}):</strong> ${t.ms || 0}ms<br>`;
+              if (t.reasoning) {
+                  html += `<em style="color: #666660;">"${esc(t.reasoning)}"</em><br>`;
+              }
+              if (Array.isArray(t.problems) && t.problems.length > 0) {
+                  html += `<span style="color: #D32F2F; font-size: 11px;">✗ ${t.problems.map(esc).join('<br>✗ ')}</span><br>`;
+              } else {
+                  html += `<span style="color: #2F6B4F; font-size: 11px;">✓ Spatial validation passed</span><br>`;
+              }
+              html += `</div>`;
+          });
+      } else {
+          html += `<div>No spatial trace generated.</div>`;
+      }
+
+      log.innerHTML = html;
+    } catch (e) {
+      console.error("renderAI failed but suppressed:", e);
+    }
   }
 
   function renderBom(bundle, total, cur, note) {
@@ -179,23 +236,10 @@
 
   /* -------------------------------------------------------- floorplan ---- */
   function calculateDynamicPositions(roomWidthInches, roomHeightInches, fixtures) {
-      let placedFixtures = [];
-      
-      fixtures.forEach(fixture => {
-          let f = { ...fixture }; 
-          const type = f.category ? f.category.toLowerCase() : '';
-          
-          // 1. Trust the backend coordinates (which now come from Gemini)
-          f.w = f.u_len; f.d = f.v_len;
-          
-          if (type.includes('shower') || type.includes('tub')) f.side = "top";
-          else if (type.includes('toilet') || type.includes('wc')) f.side = "top";
-          else if (type.includes('vanity') || type.includes('sink')) f.side = "bottom";
-          else if (type.includes('faucet')) f.side = "bottom";
-
-          placedFixtures.push(f);
-      });
-      return placedFixtures;
+      // The backend (Gemini/deterministic) now fully computes x, y, w, d, and side 
+      // accurately. We must not overwrite these with hardcoded top/bottom assignments 
+      // or we will draw right-wall fixtures rotated out of the grid bounds!
+      return fixtures;
   }
 
   const DOOR = 30; // inches; matches layout.py DOOR_WIDTH_IN
@@ -320,7 +364,7 @@
       <rect class="fp-wall" x="0" y="0" width="${W}" height="${L}" fill="none" style="stroke-width: 4px !important; pointer-events: none;" />`;
       
     // Save the entire SVG to memory for the Sustainability page injection hack
-    localStorage.setItem('saved_kohler_canvas', svg.outerHTML);
+    localStorage.setItem('saved_plumbline_canvas', svg.outerHTML);
   }
 
   /* ------------------------------------------------------------ init ---- */
@@ -380,7 +424,22 @@
         });
     });
     
-    fromPrompt(); // page is never empty on first load
+    // Check if we have a saved design in localStorage before auto-generating
+    const savedData = localStorage.getItem('saved_plumbline_data');
+    if (savedData) {
+        try {
+            const parsedData = JSON.parse(savedData);
+            $("promptInput").value = parsedData.intent_source === 'gemini' 
+                ? (parsedData.reading || $("promptInput").value) 
+                : $("promptInput").value;
+            render({ data: parsedData, elapsed_ms: "loaded" });
+        } catch (e) {
+            console.error("Failed to parse saved_plumbline_data", e);
+            fromPrompt(); // page is never empty on first load
+        }
+    } else {
+        fromPrompt(); // page is never empty on first load
+    }
   }
 
   async function saveProject() {

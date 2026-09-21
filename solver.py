@@ -102,15 +102,19 @@ def water_use(bundle, household):
     faucet = by_cat.get("faucet", {}).get("gpm", LEGACY["faucet_gpm"])
     u = USAGE_PER_PERSON_PER_DAY
 
-    def annual(g, s, f):
-        return household * 365 * (u["flushes"] * g + u["shower_min"] * s + u["faucet_min"] * f)
+    def annual_breakdown(g, s, f):
+        t = household * 365 * u["flushes"] * g
+        sh = household * 365 * u["shower_min"] * s
+        fa = household * 365 * u["faucet_min"] * f
+        return {"toilet": round(t), "shower": round(sh), "faucet": round(fa), "total": round(t + sh + fa)}
 
-    ours = annual(gpf, shower, faucet)
-    legacy = annual(LEGACY["gpf"], LEGACY["shower_gpm"], LEGACY["faucet_gpm"])
-    saved = max(0.0, legacy - ours)
-    return {"annual_gal": round(ours), "legacy_annual_gal": round(legacy),
-            "saved_gal": round(saved), "saved_pct": round(100 * saved / legacy, 1) if legacy else 0.0,
-            "household": household}
+    ours = annual_breakdown(gpf, shower, faucet)
+    legacy = annual_breakdown(LEGACY["gpf"], LEGACY["shower_gpm"], LEGACY["faucet_gpm"])
+    saved = max(0.0, legacy["total"] - ours["total"])
+    return {"annual_gal": ours["total"], "legacy_annual_gal": legacy["total"],
+            "saved_gal": round(saved), "saved_pct": round(100 * saved / legacy["total"], 1) if legacy["total"] else 0.0,
+            "household": household,
+            "breakdown": ours, "legacy_breakdown": legacy}
 
 
 # ------------------------------------------------------------------ ranking --
