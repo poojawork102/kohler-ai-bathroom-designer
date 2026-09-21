@@ -157,7 +157,7 @@ def _validate(p):
 
 
 def _watersense_report(bundle):
-    """Per-product pass/fail against the EPA WaterSense spec KOHLER certifies to."""
+    """Per-product pass/fail against the EPA WaterSense spec."""
     rows, passing = [], 0
     for p in bundle:
         cat = p["category"]
